@@ -773,6 +773,41 @@ main{flex:none;height:max(560px,calc(100vh - 100px))}
 @keyframes mq{to{transform:translateX(-100%)}}
 main{height:max(560px,calc(100vh - 128px))}
 @media(prefers-reduced-motion:reduce){#tkin{animation:none;padding-left:0}.tk{overflow-x:auto}}
+
+#side{overflow:hidden}#news{flex:1 1 0;min-height:120px}
+#side #detail{flex:0 0 auto!important;max-height:190px;min-height:80px!important}
+#nrg{padding:4px 6px}#nrg .chip{font-size:10px;padding:2px 6px;min-height:24px}
+.nw2{display:block;border-left:3px solid var(--c);padding:7px 10px;border-bottom:1px solid #2a0a0a;color:var(--t);text-decoration:none}
+a.nw2:hover{background:#2a0808}.nw2 b{color:var(--c);font-size:10px;letter-spacing:.08em}
+.nw2 .tt{display:block;margin:2px 0;font-weight:600;overflow-wrap:anywhere;line-height:1.35}.nw2 div{color:var(--m);font-size:11px;overflow-wrap:anywhere}
+@media(max-width:900px){#side{overflow:visible}#news{flex:none;max-height:60vh}#side #detail{max-height:none}}
+
+@media(max-width:900px){
+ html,body{overflow-x:hidden}
+ header{position:relative;padding:6px 8px;gap:4px 8px}
+ .ecg{display:none}h1{font-size:16px;letter-spacing:.22em}
+ header>span,header .pill{font-size:11px}
+ header #q{flex:1 1 100%;max-width:none;order:9}
+ header>button{flex:1 1 22%;min-height:36px}
+ .tick{order:10}
+ main{display:flex!important;flex-direction:column;height:auto!important;min-height:0;padding:6px 6px 20px;gap:8px}
+ #stats{order:-1}#mapS{order:0;height:62vh;min-height:340px}#side{order:1;overflow:visible!important}#feedS{order:2}
+ #feed,#news{flex:none!important;max-height:60vh;min-height:0}
+ #side #detail{max-height:none!important}
+ #mapS>h2{flex-wrap:wrap;gap:6px}#mapS>h2 button{min-height:32px}
+ .tools select,.tools input{flex:1 1 40%;min-height:36px}.tools button{min-height:32px}
+ .card{flex:1 1 44%;border-right:0;border-bottom:1px solid #2a0a0a;padding:8px 10px}
+ .card .n{font-size:20px}
+ .lg{font-size:10px;max-width:150px;padding:4px 6px}.lg .lbl{display:none}
+ .cl{font-size:9px}
+ .more{grid-template-columns:1fr!important;padding:0 6px 20px}
+ .mb{max-height:320px}.br{grid-template-columns:90px 1fr 36px}
+ .tb{font-size:11px}.tb th,.tb td{padding:5px 6px}
+ .row{padding:5px 8px}
+ .ev,.nw2{padding:8px}
+ *{min-width:0}
+}
+@media(max-width:380px){header .pill{letter-spacing:0}.card{flex-basis:100%}}
 </style></head><body>
 <header>
 <div class="brand"><h1>REDPULSE</h1><span class="lbl">Global threat monitor</span></div><svg class="ecg" viewBox="0 0 120 24" aria-hidden="true"><polyline points="0,12 22,12 28,12 32,3 38,21 43,12 70,12 76,12 80,5 86,19 90,12 120,12"/></svg>
@@ -788,21 +823,22 @@ main{height:max(560px,calc(100vh - 128px))}
 <button id="tz" aria-pressed="false" title="Toggle timestamp display">UTC</button>
 <button id="snd" aria-pressed="false">Sound: off</button>
 <button id="ntf" aria-pressed="false">Notify: off</button>
+<button id="rl" aria-pressed="true" title="If a source blocks direct browser requests, retry through a public CORS relay (allorigins.win / corsproxy.io). The relay can see which public data URLs you request. Turn off to use direct requests only.">Relay: on</button>
 <button id="dm" aria-pressed="false" title="Force synthetic demo data">Demo</button>
 <div class="tick" style="flex:1 1 100%"><span class="lbl" style="color:var(--red);font-weight:700">● Live updates</span><div class="tk" aria-hidden="true"><div id="tkin"></div></div></div>
 </header>
 <main>
-<section id="feedS" aria-label="Live events"><h2>Live events <span id="cnt"></span></h2>
+<section id="feedS" aria-label="Live events"><h2><span>Live events <span id="cnt"></span></span><span id="fu" class="lbl mono" title="Next automatic refresh"></span></h2>
 <div class="tools" id="types" role="group" aria-label="Type filter"></div>
 <div class="tools"><select id="sev" aria-label="Minimum severity"><option value="">All severities</option><option value="critical">Critical</option><option value="high">High+</option><option value="moderate">Moderate+</option></select>
+<select id="rng" aria-label="Time range"><option value="3600000">Last 1 h</option><option value="21600000" selected>Last 6 h</option><option value="86400000">Last 24 h</option><option value="0">All active</option></select>
 <select id="sort" aria-label="Sort"><option value="time">Latest</option><option value="sev">Severity</option><option value="region">Region</option><option value="type">Type</option></select></div>
 <div class="scroll" id="feed" aria-live="polite"></div></section>
 <section id="mapS"><h2>World map <span><button id="zi" title="Center on India">India</button> <button id="zw" title="Whole world">World</button> <button id="zn" aria-pressed="true" title="Toggle danger zones: translucent areas sized by severity (critical ~400 km, high ~250 km, moderate ~120 km radius). Visual aid only, not an official hazard boundary.">Danger zones</button></span></h2><div id="map" role="application" aria-label="World map"></div></section>
-<section id="side"><h2>Event details</h2><div id="detail" class="scroll" style="flex:1 1 0;min-height:110px"></div>
-<h2>Regional monitor</h2><div id="regions" style="flex:none"></div>
-<h2>Data sources</h2><div id="sources"></div></section>
+<section id="side"><h2><span>Top global news <span id="nwc" class="lbl"></span></span><span id="nu" class="lbl mono" title="Next automatic refresh"></span></h2><div class="tools" id="nrg" role="group" aria-label="News region"></div><div class="scroll" id="news" aria-live="polite"></div><h2>Event details</h2><div id="detail" class="scroll"></div></section>
 <section id="stats" aria-label="Statistics"></section>
 </main>
+<div class="more" style="padding-bottom:8px"><section class="mc"><h2>Regional monitor</h2><div id="regions"></div></section><section class="mc"><h2>Data sources</h2><div id="sources"></div></section></div>
 <div id="more" class="more"></div>
 <script>/* @preserve
  * Leaflet 1.9.4, a JS library for interactive maps. https://leafletjs.com
@@ -815,19 +851,56 @@ main{height:max(560px,calc(100vh - 128px))}
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const SEV={critical:{c:'#ff0000',l:'CRITICAL',i:'▲▲',r:4},high:{c:'#ff4d2e',l:'HIGH',i:'▲',r:3},moderate:{c:'#ff8a50',l:'MODERATE',i:'■',r:2},low:{c:'#c0455a',l:'LOW',i:'●',r:1},info:{c:'#a07880',l:'INFO',i:'ℹ',r:0}};
-const TYPES=['all','terror','blast','hijack','earthquake','weather','fire','flood','volcanic','other'];
+const TYPES=['all','terror','blast','hijack','aviation','space','earthquake','weather','fire','flood','volcanic','other'];
 const REGIONS=['North America','South America','Europe','Africa','Middle East','Asia','Oceania','Arctic / Antarctic'];
 const region=(la,lo)=>la>66||la<-60?'Arctic / Antarctic':lo<-30?(la>12?'North America':'South America'):lo<-25&&la>12?'North America':
  (lo>=-20&&lo<45&&la>=35)?'Europe':(lo>=-20&&lo<52&&la<35&&la>-36&&!(lo>34&&la>12))?'Africa':(lo>=34&&lo<60&&la>12&&la<38)?'Middle East':lo>110&&la<-8||lo>150||(lo>110&&la<0)?'Oceania':'Asia';
-const S={type:'all',sev:'',sort:'time',q:'',region:'',sel:null,zones:true,utc:true,sound:false,notify:false,demo:false,seen:new Set(),log:[],fs:new Map(),lastNote:0,first:true};
-const gq=q=>'https://api.gdeltproject.org/api/v2/geo/geo?query='+encodeURIComponent(q+' sourcelang:english')+'&format=GeoJSON&timespan=24h';
+const S={type:'all',sev:'',sort:'time',q:'',region:'',sel:null,zones:true,utc:true,sound:false,notify:false,demo:false,seen:new Set(),relay:true,rng:216e5,log:[],fs:new Map(),lastNote:0,first:true};
+const gq=q=>'https://api.gdeltproject.org/api/v2/geo/geo?query='+encodeURIComponent(q+' sourcelang:english')+'&format=GeoJSON&timespan=24h&maxpoints=150';
+const utc=x=>Date.parse(/Z|[+-]\d\d:?\d\d$/.test(x)?x:x+'Z');
+const dstr=d=>new Date(Date.now()-d*864e5).toISOString().slice(0,10);
+const pISS=j=>[{id:'iss:live',type:'space',title:'ISS live position',sev:'info',lat:j.latitude,lon:j.longitude,country:'',ts:(j.timestamp||Date.now()/1e3)*1e3,upd:(j.timestamp||Date.now()/1e3)*1e3,source:'wheretheiss.at',url:'https://wheretheiss.at/',status:'LIVE TELEMETRY',desc:'International Space Station · altitude '+Math.round(j.altitude)+' km · speed '+Math.round(j.velocity)+' km/h · '+j.visibility+'. Position refreshes about every 30 s.'}];
+const pNWS=j=>(j.features||[]).slice(0,150).map(f=>{const p=f.properties||{},g=f.geometry;if(!g)return null;const pts=[];(function w(c){typeof c[0]==='number'?pts.push(c):c.forEach(w)})(g.coordinates);if(!pts.length)return null;
+ const lo=pts.reduce((a,c)=>a+c[0],0)/pts.length,la=pts.reduce((a,c)=>a+c[1],0)/pts.length,ev=p.event||'Alert';
+ return{id:'nws:'+f.id,type:/flood/i.test(ev)?'flood':/fire/i.test(ev)?'fire':'weather',title:ev+' — '+(p.areaDesc||'').slice(0,80),sev:p.severity==='Extreme'?'critical':p.severity==='Severe'?'high':'moderate',lat:la,lon:lo,country:'',ts:Date.parse(p.sent||p.effective)||Date.now(),upd:Date.parse(p.sent)||Date.now(),source:'NOAA NWS',url:'https://alerts.weather.gov/',status:'OFFICIAL ALERT',desc:(p.headline||ev)+(p.expires?' · expires '+p.expires:'')}}).filter(Boolean);
+const pGDACS=j=>(j.features||[]).filter(f=>f.geometry&&f.geometry.type==='Point').map(f=>{const p=f.properties||{},g=f.geometry.coordinates,T={EQ:'earthquake',TC:'weather',FL:'flood',VO:'volcanic',WF:'fire'},lv=String(p.alertlevel||'').toLowerCase();
+ return{id:'gdacs:'+p.eventtype+p.eventid+':'+(p.episodeid||''),type:T[p.eventtype]||'other',title:(p.name||p.eventname||'GDACS event')+(p.country?' — '+p.country:''),sev:lv==='red'?'critical':lv==='orange'?'high':'low',lat:g[1],lon:g[0],country:'',ts:utc(p.fromdate)||Date.now(),upd:utc(p.datemodified||p.todate||p.fromdate)||Date.now(),source:'GDACS (UN/EC)',url:(p.url&&p.url.report)||'https://www.gdacs.org/',status:'OFFICIAL ALERT',desc:(p.description||'')+' Alert level: '+(p.alertlevel||'n/a')+(p.severitydata&&p.severitydata.severitytext?' · '+p.severitydata.severitytext:'')}});
+const pSky=j=>(j.states||[]).filter(s=>['7500','7600','7700'].includes(s[14])&&s[5]!=null&&s[6]!=null).map(s=>{const c=s[14],h=c==='7500',cs=(s[1]||'').trim()||s[0];
+ return{id:'sky:'+s[0]+':'+c,type:h?'hijack':'aviation',title:(h?'Squawk 7500 (hijack code) — ':c==='7700'?'Squawk 7700 (emergency) — ':'Squawk 7600 (radio failure) — ')+cs,sev:h?'critical':c==='7700'?'high':'moderate',lat:s[6],lon:s[5],country:'',ts:(s[4]||Date.now()/1e3)*1e3,upd:(s[3]||s[4]||Date.now()/1e3)*1e3,source:'OpenSky Network',url:'https://opensky-network.org/',status:'UNVERIFIED · TRANSPONDER CODE',desc:'Aircraft '+s[0]+' ('+(s[2]||'unknown origin')+') is broadcasting transponder code '+c+(s[8]?', on the ground':', altitude '+Math.round(s[7]||0)+' m')+'. Codes can be set by mistake or during tests, so this is NOT a confirmed incident.'}});
+const pSW=j=>(Array.isArray(j)?j:[]).slice(0,8).map(a=>{const ls=String(a.message||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean),l=ls.find(x=>/^(ALERT|WARNING|WATCH|SUMMARY|EXTENDED WARNING|CONTINUED)/i.test(x))||ls[3]||'Space weather bulletin',iso=String(a.issue_datetime||'').replace(' ','T');
+ return{id:'swpc:'+a.product_id+':'+a.issue_datetime,kind:'NOAA',cat:'Space weather',title:l.slice(0,200),src:'NOAA SWPC',url:'https://www.swpc.noaa.gov/',ts:utc(iso)||Date.now(),day:0}});
 const SRC=[
  {id:'usgs',name:'USGS',kind:'Earthquakes',url:'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson',every:30e3,parse:pUSGS},
  {id:'eonet',name:'NASA EONET',kind:'Natural events',url:'https://eonet.gsfc.nasa.gov/api/v3/events?status=open&limit=150',every:30e3,parse:pEONET},
- {id:'g-terror',name:'GDELT',kind:'Terror attack reports',url:gq('("terrorist attack" OR "terror attack" OR "suicide bombing")'),every:300e3,delay:6e3,parse:pGDELT('Terror attack','terror')},
- {id:'g-blast',name:'GDELT',kind:'Bomb blast reports',url:gq('("bomb blast" OR bombing OR "car bomb")'),every:300e3,delay:12e3,parse:pGDELT('Bomb blast','blast')},
- {id:'g-hijack',name:'GDELT',kind:'Hijack reports',url:gq('(hijack OR hijacked OR hijacking)'),every:300e3,delay:18e3,parse:pGDELT('Hijack','hijack')}
+ {id:'g-terror',name:'GDELT',kind:'Terror attack reports',url:gq('("terrorist attack" OR "terror attack" OR "suicide bombing")'),every:30e3,delay:6e3,parse:pGDELT('Terror attack','terror')},
+ {id:'g-blast',name:'GDELT',kind:'Bomb blast reports',url:gq('("bomb blast" OR bombing OR "car bomb")'),every:30e3,delay:12e3,parse:pGDELT('Bomb blast','blast')},
+ {id:'g-hijack',name:'GDELT',kind:'Hijack reports',url:gq('(hijack OR hijacked OR hijacking)'),every:30e3,delay:18e3,parse:pGDELT('Hijack','hijack')},
+ {id:'gdacs',name:'GDACS',kind:'UN/EC global disasters',urlf:()=>'https://www.gdacs.org/gdacsapi/api/events/geteventlist/SEARCH?eventlist=EQ;TC;FL;VO;WF&alertlevel=Orange;Red&fromdate='+dstr(7)+'&todate='+dstr(0),every:30e3,delay:2e3,parse:pGDACS},
+ {id:'nws',name:'NOAA NWS',kind:'US severe weather alerts',url:'https://api.weather.gov/alerts/active?status=actual&message_type=alert&severity=Extreme,Severe',every:30e3,delay:3e3,parse:pNWS},
+ {id:'iss',name:'wheretheiss.at',kind:'ISS live tracking',url:'https://api.wheretheiss.at/v1/satellites/25544',every:30e3,delay:500,parse:pISS},
+ {id:'opensky',name:'OpenSky',kind:'Aircraft emergency codes',url:'https://opensky-network.org/api/states/all',every:600e3,delay:4e3,parse:pSky}
 ].map(s=>({...s,st:'pending',ev:[],last:0,fails:0,err:'',t:null}));
+const MON=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const wikiUrl=d=>{const t=new Date(Date.now()-d*864e5);return'https://en.wikipedia.org/w/api.php?action=parse&format=json&prop=text&origin=*&page='+encodeURIComponent('Portal:Current_events/'+t.getUTCFullYear()+'_'+MON[t.getUTCMonth()]+'_'+t.getUTCDate())};
+const gdoc=()=>'https://api.gdeltproject.org/api/v2/doc/doc?query='+encodeURIComponent('(attack OR killed OR earthquake OR ceasefire OR "state of emergency" OR sanctions OR summit OR outbreak) sourcelang:english')+'&mode=artlist&maxrecords=40&format=json&sort=hybridrel&timespan=3h';
+const pWiki=d=>j=>{const html=j&&j.parse&&j.parse.text&&j.parse.text['*'];if(!html)return[];
+ const doc=new DOMParser().parseFromString(html,'text/html'),root=doc.querySelector('.current-events-content')||doc.body,day=new Date(Date.now()-d*864e5),dayMs=Date.UTC(day.getUTCFullYear(),day.getUTCMonth(),day.getUTCDate()),out=[];let cat='Top story',k=0;
+ const walk=el=>{for(const c of el.children){const tg=c.tagName;
+  if(tg==='UL'){c.querySelectorAll('li').forEach(li=>{if(li.querySelector('ul'))return;const t=li.textContent.replace(/\s+/g,' ').trim();if(t.length<25)return;
+   const a=li.querySelector('a.external,a[href^="http"]'),h=a&&a.getAttribute('href'),m=t.match(/\(([^()]*)\)\s*$/);
+   out.push({id:'wiki:'+d+':'+t.slice(0,70),kind:'WIKI',cat,title:t.replace(/\s*\([^()]*\)\s*$/,'').slice(0,300),src:m?m[1]:'Wikipedia',url:h&&/^https?:\/\//.test(h)?h:'',ts:dayMs+Math.max(0,999-k++),day:dayMs})})}
+  else if((tg==='P'||tg==='DL'||/^H[2-6]$/.test(tg))&&!c.querySelector('li')&&c.textContent.trim().length<70){cat=c.textContent.trim()||cat}
+  else if(tg==='DIV')walk(c)}};
+ walk(root);return out};
+const pNews=j=>(j.articles||[]).filter(a=>a.title&&/^https?:\/\//.test(a.url)).map(a=>{const m=/^(\d{4})(\d\d)(\d\d)T(\d\d)(\d\d)(\d\d)/.exec(a.seendate||'');
+ return{id:'gn:'+a.url,kind:'MEDIA',cat:'Media headline',title:a.title.slice(0,240),src:a.domain||'',url:a.url,ts:m?Date.UTC(+m[1],m[2]-1,+m[3],+m[4],+m[5],+m[6]):Date.now(),day:0}});
+const NSRC=[
+ {id:'wiki0',name:'Wikipedia',kind:'Current events (today)',urlf:()=>wikiUrl(0),every:30e3,parse:pWiki(0)},
+ {id:'wiki1',name:'Wikipedia',kind:'Current events (yesterday)',urlf:()=>wikiUrl(1),every:300e3,delay:1500,parse:pWiki(1)},
+ {id:'g-news',name:'GDELT',kind:'Top headlines',url:gdoc(),every:30e3,delay:24e3,parse:pNews},
+ {id:'swpc',name:'NOAA SWPC',kind:'Space weather alerts',url:'https://services.swpc.noaa.gov/products/alerts.json',every:30e3,delay:5e3,parse:pSW}
+].map(s=>({...s,st:'pending',ev:[],last:0,fails:0,err:'',t:null}));
+
 
 function pUSGS(j){return j.features.filter(f=>f.geometry&&f.properties.mag!=null).map(f=>{const p=f.properties,g=f.geometry.coordinates,m=p.mag;
  return{id:'usgs:'+f.id,type:'earthquake',title:'M'+m.toFixed(1)+' '+(p.place||'Earthquake'),sev:m>=7?'critical':m>=6?'high':m>=4.5?'moderate':'low',lat:g[1],lon:g[0],
@@ -839,7 +912,7 @@ function pEONET(j){const map={wildfires:['fire','moderate'],severeStorms:['weath
  url:(e.sources[0]&&e.sources[0].url)||e.link,status:'UNVERIFIED',desc:(c.title||'Event')+(g.magnitudeValue!=null?' · '+g.magnitudeValue+' '+(g.magnitudeUnit||''):'')+' · aggregated from third-party sources'}}).filter(Boolean)}
 
 const FS2=new Map();
-function pGDELT(label,type){return j=>{if(FS2.size>3000)FS2.clear();return(j.features||[]).filter(f=>f.geometry&&Array.isArray(f.geometry.coordinates)).map(f=>{
+function pGDELT(label,type){return j=>{if(FS2.size>500)FS2.clear();return(j.features||[]).filter(f=>f.geometry&&Array.isArray(f.geometry.coordinates)).map(f=>{
  const p=f.properties||{},g=f.geometry.coordinates,n=+p.count||1;let url='',head='';
  try{const a=new DOMParser().parseFromString(p.html||'','text/html').querySelector('a[href^="https://"],a[href^="http://"]');if(a){url=a.href;head=a.textContent.trim().slice(0,140)}}catch{}
  const id='gdelt:'+type+':'+g[1].toFixed(2)+','+g[0].toFixed(2);if(!FS2.has(id))FS2.set(id,Date.now());
@@ -849,17 +922,25 @@ function pGDELT(label,type){return j=>{if(FS2.size>3000)FS2.clear();return(j.fea
 function demoData(){const n=Date.now(),d=[['earthquake','critical',35.1,139.4,'Japan'],['fire','high',37.2,-120.5,'USA'],['weather','moderate',23.8,90.4,'Bangladesh'],['flood','moderate',-6.2,106.8,'Indonesia'],['volcanic','low',64.4,-17.3,'Iceland']];
  return d.map((x,i)=>({id:'demo:'+i,type:x[0],title:'[SYNTHETIC] '+x[0]+' sample',sev:x[1],lat:x[2],lon:x[3],country:x[4],ts:n-i*6e5,upd:n-i*6e5,source:'SYNTHETIC',url:'',status:'DEMO / SIMULATED',desc:'Synthetic data for interface demonstration. Not a real-world incident.'}))}
 
-async function getJSON(u){const ac=new AbortController(),to=setTimeout(()=>ac.abort(),12e3);try{const r=await fetch(u,{signal:ac.signal,cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);return await r.json()}finally{clearTimeout(to)}}
-const urlsFor=s=>[s.url];
+async function getJSON(u){if(navigator.onLine===false)throw new Error('no internet connection');const ac=new AbortController(),to=setTimeout(()=>ac.abort(),12e3);try{const r=await fetch(u,{signal:ac.signal,cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);return await r.json()}finally{clearTimeout(to)}}
+const RELAYS=[u=>'https://api.allorigins.win/raw?url='+encodeURIComponent(u),u=>'https://corsproxy.io/?url='+encodeURIComponent(u)];
+const CSPB=new Set();document.addEventListener('securitypolicyviolation',e=>{try{CSPB.add(new URL(e.blockedURI).hostname)}catch{}});
+async function diagnose(s){const u=s.urlf?s.urlf():s.url;let h='';try{h=new URL(u).hostname}catch{}
+ if(CSPB.has(h))return"blocked by this page's security policy (typical inside a preview or sandbox). Open index.html directly in Chrome, Firefox or Safari.";
+ try{await Promise.race([fetch(u,{mode:'no-cors',cache:'no-store'}),new Promise((_,r)=>setTimeout(()=>r(new Error('t')),8e3))]);return'provider is reachable but does not give browser pages permission to read it (no CORS)'+(S.relay?'; the relays could not fetch it either':'; try turning Relay on')}
+ catch{return'cannot reach the provider at all: network, firewall, VPN, ad-blocker, or a page security policy. If you are in a preview, open index.html directly in your browser.'}}
+async function fetchSrc(s){const u0=s.urlf?s.urlf():s.url;let first;
+ try{const j=await getJSON(u0);s.via='direct';return j}catch(e){first=e}
+ if(S.relay&&first.name==='TypeError'&&navigator.onLine!==false){for(const r of RELAYS){try{const j=await getJSON(r(u0));s.via='relay';return j}catch{}}}
+ throw first}
+const friendly=e=>navigator.onLine===false?'no internet connection':e.name==='AbortError'?'timeout':e.name==='TypeError'?'blocked by browser (CORS) or network error'+(S.relay?'; relay also failed':''):e.name==='SyntaxError'?'unexpected response (possibly rate-limited)':e.message;
 async function poll(s){
  if(s.busy)return;s.busy=1;
- try{let j,errs=[];
-  for(const u of urlsFor(s)){try{j=await getJSON(u);break}catch(e){errs.push(e.name==='AbortError'?'timeout':e instanceof TypeError?'blocked by browser (CORS) or offline':e.message)}}
-  if(!j)throw new Error([...new Set(errs)].join(' / '));
-  const prev=new Set(s.ev.map(e=>e.id)),was=s.st,nm=s.name+' · '+s.kind;s.ev=s.parse(j);const fresh=s.last?s.ev.filter(e=>!prev.has(e.id)):[];s.newN=fresh.length;s.st='ok';s.last=Date.now();s.fails=0;s.err='';
+ try{const j=await fetchSrc(s);
+  const prev=new Set(s.ev.map(e=>e.id)),was=s.st,nm=s.name+' · '+s.kind;s.ev=s.parse(j);const fresh=s.last?s.ev.filter(e=>!prev.has(e.id)):[];s.newN=fresh.length;s.st='ok';s.last=Date.now();s.fails=0;s.err='';s.diag='';
   if(was==='pending')logUp(nm,'connected, '+s.ev.length+' events loaded');else if(was==='error')logUp(nm,'back online, '+s.ev.length+' events');
-  if(fresh.length)logUp(nm,'+'+fresh.length+' new: '+fresh.slice(0,2).map(e=>e.title).join('; ')+(fresh.length>2?' …':''));else if(was==='ok')logUp(nm,'checked, no new events ('+s.ev.length+' active)',1);}
- catch(e){const was=s.st;s.st='error';s.fails++;s.err=e.message;if(was!=='error')logUp(s.name+' · '+s.kind,'OFFLINE — '+e.message)}
+  if(fresh.length)logUp(nm,'+'+fresh.length+' new: '+fresh.slice(0,2).map(e=>e.title).join('; ')+(fresh.length>2?' …':''));}
+ catch(e){const was=s.st;s.st='error';s.fails++;s.err=s.diag||friendly(e);if(e.name==='TypeError'&&!s.diag&&!s.diagging){s.diagging=1;diagnose(s).then(d=>{s.diag=d;s.err=d;s.diagging=0;logUp(s.name+' · '+s.kind,'diagnosis — '+d);refresh()})}if(was!=='error')logUp(s.name+' · '+s.kind,'OFFLINE — '+s.err)}
  finally{s.busy=0;}
  const wait=s.st==='ok'?s.every:Math.min(s.every*2**s.fails,6e5);
  clearTimeout(s.t);s.next=wait;s.at=Date.now()+wait;if(!document.hidden)s.t=setTimeout(()=>poll(s),wait);
@@ -869,7 +950,7 @@ const online=()=>SRC.filter(s=>s.st==='ok').length;
 const isDemo=()=>S.demo||(SRC.every(s=>s.st==='error'));
 const events=()=>isDemo()?demoData():SRC.flatMap(s=>s.ev);
 
-function visible(all){const q=S.q.toLowerCase();let a=all.filter(e=>(S.type==='all'||e.type===S.type)&&(!S.sev||SEV[e.sev].r>=SEV[S.sev].r)&&(!S.region||e.region===S.region)&&
+function visible(all){const q=S.q.toLowerCase();let a=all.filter(e=>(S.type==='all'||e.type===S.type)&&(!S.sev||SEV[e.sev].r>=SEV[S.sev].r)&&(!S.region||e.region===S.region)&&(!S.rng||e.ts>Date.now()-S.rng)&&
  (!q||[e.title,e.country,e.region,e.id,e.source,e.type].some(v=>String(v).toLowerCase().includes(q))));
  const k={time:(x,y)=>y.ts-x.ts,sev:(x,y)=>SEV[y.sev].r-SEV[x.sev].r||y.ts-x.ts,region:(x,y)=>x.region.localeCompare(y.region)||y.ts-x.ts,type:(x,y)=>x.type.localeCompare(y.type)||y.ts-x.ts};
  return a.sort(k[S.sort])}
@@ -883,6 +964,23 @@ const ringC=r=>{let A=0,x=0,y=0;for(let i=0,j=r.length-1;i<r.length;j=i++){const
 const WF=WORLD.features.filter(f=>f.geometry).map(f=>{const polys=f.geometry.type==='Polygon'?[f.geometry.coordinates]:f.geometry.coordinates;let b=[180,90,-180,-90],big=0,pt=null;
  polys.forEach(p=>{let q=[180,90,-180,-90];p[0].forEach(c=>{q=[Math.min(q[0],c[0]),Math.min(q[1],c[1]),Math.max(q[2],c[0]),Math.max(q[3],c[1])]});b=[Math.min(b[0],q[0]),Math.min(b[1],q[1]),Math.max(b[2],q[2]),Math.max(b[3],q[3])];const ar=(q[2]-q[0])*(q[3]-q[1]);if(ar>=big){big=ar;pt=ringC(p[0])}});return{n:f.properties.name,polys,b,pt,size:big}});
 const inRing=(r,x,y)=>{let i=false;for(let a=0,j=r.length-1;a<r.length;j=a++){const xi=r[a][0],yi=r[a][1],xj=r[j][0],yj=r[j][1];if((yi>y)!==(yj>y)&&x<(xj-xi)*(y-yi)/(yj-yi)+xi)i=!i}return i};
+const ALI=[[/Gaza|Hamas|Hezbollah|West Bank|Tehran/,'Middle East'],[/Kyiv|Kharkiv|Zelensky/,'Europe'],[/Washington|U\.S\.|\bUS\b|Trump|Congress/,'North America'],[/Beijing|Taipei|Xi Jinping/,'Asia']].map(x=>({re:x[0],r:x[1]}));
+const NR=ALI.concat(WF.filter(f=>f.pt&&f.n.length>3).map(f=>({re:new RegExp('\\b'+f.n.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b'),r:region(f.pt[0],f.pt[1])})));
+const RC=new Map();
+function regOf(t){if(RC.has(t))return RC.get(t);if(RC.size>500)RC.clear();let best=1e9,r='Global';NR.forEach(x=>{const i=t.search(x.re);if(i>=0&&i<best){best=i;r=x.r}});RC.set(t,r);return r}
+let NEWSR='';
+const catCol=c=>/conflict|attack|disaster|accident|terror/i.test(c)?'#ff1e1e':/health|environment|crime|law/i.test(c)?'#ff8a50':'#a07880';
+function renderNews(){const q=S.q.toLowerCase(),seen=new Set();
+ let a=NSRC.flatMap(s=>s.ev).filter(n=>!/sport|arts|culture|entertain/i.test(n.cat)).map(n=>({...n,region:regOf(n.title)}))
+  .filter(n=>{const k=n.title.toLowerCase().slice(0,60);if(seen.has(k))return false;seen.add(k);return true})
+  .filter(n=>(!NEWSR||n.region===NEWSR)&&(!q||(n.title+n.cat+n.src+n.region).toLowerCase().includes(q))).sort((x,y)=>y.ts-x.ts);
+ $('#nwc').textContent='('+a.length+')';
+ $('#news').innerHTML=a.length?a.slice(0,80).map(n=>{const col=catCol(n.cat),when=n.kind==='WIKI'?new Date(n.day).toUTCString().slice(5,11)+' (UTC day)':fmt(n.ts)+' · '+ago(n.ts),
+  inner=`<b>${esc(n.region.toUpperCase())}</b> · ${esc(n.cat)}<span class="tt">${esc(n.title)}</span><div class="mono">${when} · ${esc(n.src)} · ${n.kind==='WIKI'?'WIKIPEDIA CURRENT EVENTS':n.kind==='NOAA'?'NOAA SPACE WEATHER CENTER · OFFICIAL':'MEDIA REPORT · UNVERIFIED'}</div>`;
+  return n.url?`<a class="nw2" style="--c:${col}" href="${esc(n.url)}" target="_blank" rel="noopener noreferrer">${inner}</a>`:`<div class="nw2" style="--c:${col}">${inner}</div>`}).join('')
+  :'<p class="lbl" style="padding:14px">'+(NSRC.every(s=>s.st!=='ok')?'News sources unavailable right now. Retrying automatically.':'No headlines match this filter.')+'</p>'}
+$('#nrg').innerHTML=['All'].concat(REGIONS,['Global']).map(r=>`<button class="chip" data-n="${r==='All'?'':r}" aria-pressed="${r==='All'}">${r}</button>`).join('');
+$('#nrg').onclick=e=>{const b=e.target.closest('[data-n]');if(!b)return;NEWSR=b.dataset.n;document.querySelectorAll('#nrg button').forEach(x=>x.setAttribute('aria-pressed',x===b));renderNews()};
 const CC=new Map();
 function countryOf(la,lo){const k=la.toFixed(1)+','+lo.toFixed(1);if(CC.has(k))return CC.get(k);let r='';for(const f of WF){if(lo<f.b[0]||lo>f.b[2]||la<f.b[1]||la>f.b[3])continue;if(f.polys.some(p=>inRing(p[0],lo,la)&&!p.slice(1).some(h=>inRing(h,lo,la)))){r=f.n;break}}CC.set(k,r);return r}
 const BASE={color:'#8b0000',weight:.7,fillColor:'#150506',fillOpacity:1},BIN={color:'#e03030',weight:1.4,fillColor:'#1e0708',fillOpacity:1},baseOf=()=>BASE;
@@ -901,7 +999,7 @@ function initMap(){
  layer=L.layerGroup().addTo(map);
  const lg=L.control({position:'bottomleft'});lg.onAdd=()=>{const d=L.DomUtil.create('div','lg');d.innerHTML=Object.values(SEV).map(v=>`<div><i style="background:${v.c}"></i>${v.i} ${v.l}</div>`).join('')+'<div class="lbl">Danger zones = visual aid only</div>';return d};lg.addTo(map);
 }
-function logUp(src,msg,quiet){S.log.unshift({t:Date.now(),src,msg,q:!!quiet});if(S.log.length>80)S.log.length=80;if(!quiet)tick()}
+function logUp(src,msg,quiet){S.log.unshift({t:Date.now(),src,msg,q:!!quiet});if(S.log.length>40)S.log.length=40;if(!quiet)tick()}
 function tick(){const el=$('#tkin');if(!el)return;const it=S.log.filter(x=>!x.q).slice(0,8);
  const txt=it.length?it.map(x=>new Date(x.t).toISOString().slice(11,19)+'Z  '+esc(x.src)+': '+esc(x.msg)).join('   ◆   '):'Waiting for first data from live sources…';
  el.innerHTML=txt;el.style.setProperty('--d',Math.max(30,it.reduce((a,x)=>a+x.msg.length,0)*.22)+'s')}
@@ -921,10 +1019,13 @@ function renderMore(L){
  const hi=L.filter(e=>e.sev==='critical'||e.sev==='high').sort((a,b)=>b.ts-a.ts).slice(0,10).map(evBtn).join('')||'<p class="lbl" style="padding:10px">No critical or high events.</p>';
  const big=eq.sort((a,b)=>b.m-a.m).slice(0,8).map(x=>evBtn(x.e)).join('')||'<p class="lbl" style="padding:10px">No earthquakes loaded.</p>';
  const md=L.filter(e=>e.source.startsWith('GDELT')).sort((a,b)=>(b.n||0)-(a.n||0)).slice(0,12).map(e=>`<tr data-id="${esc(e.id)}" class="clk"><td>${esc(e.title.replace(' reports — ',' · '))}</td><td class="mono">${e.n||'—'}</td><td class="mono">${ago(e.ts)}</td></tr>`);
- const sr=SRC.map(x=>`<tr><td>${x.name} <small>${x.kind}</small></td><td>${x.st==='ok'?'● CONNECTED':x.st==='error'?'✕ OFFLINE':'… CONNECTING'}</td><td class="mono">${x.ev.length}</td><td class="mono">${x.every/1000}s</td><td class="mono">${x.last?ago(x.last):'—'}</td><td class="mono">${x.at?Math.max(0,Math.round((x.at-now)/1000))+'s':'—'}</td><td>${esc(x.err||'—')}</td></tr>`);
+ const sr=[...SRC,...NSRC].map(x=>`<tr><td>${x.name} <small>${x.kind}</small></td><td>${x.st==='ok'?'● CONNECTED'+(x.via==='relay'?' (relay)':''):x.st==='error'?'✕ OFFLINE':'… CONNECTING'}</td><td class="mono">${x.ev.length}</td><td class="mono">${x.every/1000}s</td><td class="mono">${x.last?ago(x.last):'—'}</td><td class="mono">${x.at?Math.max(0,Math.round((x.at-now)/1000))+'s':'—'}</td><td>${esc(x.err||'—')}</td></tr>`);
  const about=`<div class="ab"><p><b>Global alert level</b> is an interface aggregation of loaded events: CRITICAL if any critical event exists, HIGH if 5 or more high events, ELEVATED if any high event, otherwise NORMAL. It is not an official risk rating.</p>
 <p><b>Severity rules.</b> USGS earthquakes: M7+ critical, M6+ high, M4.5+ moderate, below that low. NASA EONET: volcanoes high, storms/fires/floods moderate, other low. GDELT media reports: 15+ articles critical, 3+ high, otherwise moderate, based only on how many news items name the place.</p>
 <p><b>Data status.</b> VERIFIED SOURCE = reviewed by the publishing agency. PRELIMINARY = automatic, may be revised. UNVERIFIED = aggregated or media-derived, not confirmed. DEMO / SIMULATED = synthetic sample data shown only when no live source is reachable.</p>
+<p><b>Live sources.</b> USGS (earthquakes), NASA EONET (natural events), GDACS (UN/EC disaster alerts), NOAA NWS (US severe weather), OpenSky (aircraft emergency transponder codes 7500/7600/7700), wheretheiss.at (ISS position), GDELT (media reports and headlines), Wikipedia Current events, NOAA SWPC (space weather). Each is requested directly from your browser on its own schedule and nothing is saved: no cookies, local storage or database, and old items are dropped when sources stop returning them.</p>
+<p><b>Relay.</b> Some providers block requests made directly from a web page. When that happens and Relay is on, the page retries through a public CORS relay (allorigins.win or corsproxy.io); those services can see which public data URLs you ask for. Sources fetched that way show "(relay)". Switch Relay off in the top bar to use direct requests only.</p>
+<p><b>Top global news</b> combines Wikipedia's editor-curated Current events portal (sports and arts hidden; each item names its original outlet) with automatically selected English-language headlines from GDELT. Regions are guessed from country names in the headline, so some items show as Global. Treat media headlines as unverified.</p>
 <p><b>Time.</b> Source timestamps are kept as published and shown in the zone labelled next to them (toggle UTC / Local in the top bar). GDELT items have no event time, so the time shown is when this page first saw them.</p>
 <p><b>Nothing is saved.</b> No cookies, local storage or server are used; all data lives in memory and disappears when you close the page.</p>
 <p><b>Limits.</b> This is a monitoring interface, not an authority. Media-derived markers can be wrong, duplicated or mis-located. Country shapes use Natural Earth boundaries (India perspective), simplified for speed. Danger zones on the map are a visual aid only. Statistics below follow your current filters and search.</p></div>`;
@@ -965,13 +1066,13 @@ function render(){
  const ids=new Set(all.map(e=>e.id)),now=Date.now();
  all.forEach(e=>{if(!S.fs.has(e.id))S.fs.set(e.id,S.first?0:now)});
  S.fs.forEach((v,k)=>{if(!ids.has(k))S.fs.delete(k)});S.seen.forEach(k=>{if(!ids.has(k))S.seen.delete(k)});
- if(CC.size>5000)CC.clear();
+ if(CC.size>1000)CC.clear();
  // feed
  const nn=SRC.reduce((a,x)=>a+(x.newN||0),0);$('#cnt').textContent='('+list.length+')'+(nn?' +'+nn+' new':'');
  $('#feed').innerHTML=list.length?list.slice(0,200).map(e=>{const c=SEV[e.sev];
   const nw=S.fs.get(e.id)>0&&now-S.fs.get(e.id)<3e4;
-  return`<button class="ev${nw?' nw':''}" style="--c:${c.c}" data-id="${esc(e.id)}"><b>${c.i} ${c.l}</b> · ${esc(e.type.toUpperCase())}<br>${esc(e.title)}<div class="mono">${fmt(e.ts)} · ${ago(e.ts)} · ${esc(e.source)} · ${esc(e.status)}</div></button>`}).join(''):'<p class="lbl" style="padding:14px">No events match the current filters.</p>';
- drawMap(list);renderMore(list);lastAll=all;
+  return`<button class="ev${nw?' nw':''}" style="--c:${c.c}" data-id="${esc(e.id)}"><b>${c.i} ${c.l}</b> · ${esc(e.type.toUpperCase())}<br>${esc(e.title)}<div class="mono">${fmt(e.ts)} · ${ago(e.ts)} · ${esc(e.source)} · ${esc(e.status)}</div></button>`}).join(''):'<p class="lbl" style="padding:14px">No events in this time range or filter. Widen the time range above.</p>';
+ lastAll=all;drawMap(list);renderMore(list);renderNews();
  // stats
  const cnt=k=>all.filter(e=>e.sev===k).length,d24=all.filter(e=>e.ts>Date.now()-864e5).length;
  const cards=[['Active events',all.length],['Critical',cnt('critical')],['High',cnt('high')],['Moderate',cnt('moderate')],['Low',cnt('low')],['Countries affected',new Set(all.map(e=>e.country).filter(Boolean)).size],['Last 24h',d24],['Sources online',online()+' / '+SRC.length]];
@@ -983,11 +1084,11 @@ function render(){
  $('#regions').innerHTML=REGIONS.map(r=>{const x=all.filter(e=>e.region===r),l=x.sort((a,b)=>b.ts-a.ts)[0];
   return`<div class="row reg" tabindex="0" role="button" aria-pressed="${S.region===r}" data-r="${r}" style="${S.region===r?'background:#1a0808':''}"><span>${r}</span><span class="mono">${x.length} / ${x.filter(e=>e.sev==='critical').length}crit${l?' · '+ago(l.ts):''}</span></div>`}).join('');
  // sources
- $('#sources').innerHTML=SRC.map(s=>`<div class="row"><span>${s.st==='ok'?'●':s.st==='error'?'✕':'…'} ${s.name} <small>${s.kind}</small></span><span class="mono">${s.st==='ok'?'CONNECTED · '+s.ev.length+' ev · '+ago(s.last)+' · /'+s.every/1000+'s':s.st==='error'?'OFFLINE ('+esc(s.err)+') retry '+Math.round((s.next||0)/1000)+'s'+(s.last?' · last ok '+ago(s.last):''):'CONNECTING'}</span></div>`).join('');
+ $('#sources').innerHTML=[...SRC,...NSRC].map(s=>`<div class="row"><span>${s.st==='ok'?'●':s.st==='error'?'✕':'…'} ${s.name} <small>${s.kind}</small></span><span class="mono">${s.st==='ok'?'CONNECTED'+(s.via==='relay'?' (relay)':'')+' · '+s.ev.length+' ev · '+ago(s.last)+' · /'+s.every/1000+'s':s.st==='error'?'OFFLINE ('+esc(s.err)+') retry '+Math.round((s.next||0)/1000)+'s'+(s.last?' · last ok '+ago(s.last):''):'CONNECTING'}</span></div>`).join('');
  // header status
  const demo=isDemo(),on=online(),lv2=$('#live');
  lv2.className='pill '+(on&&!demo?'live':'off');
- $('#liveT').textContent=demo?(S.demo?'DEMO':'SOURCES OFFLINE'):on<SRC.length?'LIVE (PARTIAL)':'LIVE · STREAM CONNECTED';
+ $('#liveT').textContent=navigator.onLine===false?'NO INTERNET · RETRYING':demo?(S.demo?'DEMO':'SOURCES OFFLINE'):on<SRC.length?'LIVE (PARTIAL)':'LIVE · STREAM CONNECTED';
  $('#demoB').style.display=demo?'':'none';
  const lt=Math.max(0,...SRC.map(s=>s.last));$('#last').textContent=lt?new Date(lt).toISOString().slice(11,19)+' UTC':'—';
  if(S.sel)renderDetail(all.find(e=>e.id===S.sel));
@@ -1007,18 +1108,21 @@ $('#feed').onclick=e=>{const b=e.target.closest('[data-id]');if(b)select(b.datas
 $('#regions').onclick=e=>{const b=e.target.closest('[data-r]');if(!b)return;S.region=S.region===b.dataset.r?'':b.dataset.r;render()};
 $('#regions').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();e.target.click()}};
 $('#sev').onchange=e=>{S.sev=e.target.value;render()};
+$('#rng').onchange=e=>{S.rng=+e.target.value;render()};
 $('#sort').onchange=e=>{S.sort=e.target.value;render()};
 let dt;$('#q').oninput=e=>{clearTimeout(dt);dt=setTimeout(()=>{S.q=e.target.value.trim();render()},200)};
 const tog=(id,k,txt,after)=>{$(id).onclick=function(){S[k]=!S[k];this.setAttribute('aria-pressed',S[k]);if(txt)this.textContent=txt(S[k]);after&&after();render()}};
 tog('#tz','utc',v=>v?'UTC':'Local');$('#tz').setAttribute('aria-pressed','true');
 tog('#snd','sound',v=>'Sound: '+(v?'on':'off'));
-tog('#dm','demo');tog('#zn','zones');
+tog('#dm','demo');tog('#rl','relay',v=>'Relay: '+(v?'on':'off'));tog('#zn','zones');
 tog('#ntf','notify',v=>'Notify: '+(v?'on':'off'),()=>{if(S.notify&&window.Notification&&Notification.permission==='default')Notification.requestPermission();if(!window.Notification)S.notify=false});
-const T1=setInterval(()=>{const n=new Date();const at=Math.min(...SRC.map(x=>x.at||Infinity));$('#nxt').textContent=document.hidden?'paused':isFinite(at)?Math.max(0,Math.round((at-Date.now())/1000))+'s':'—';$('#utc').textContent=n.toISOString().slice(11,19);$('#loc').textContent=n.toLocaleTimeString([], {hour12:false})},1000);
+const cd=a=>{const t=Math.min(...a.map(x=>x.at||Infinity));return document.hidden?'paused':isFinite(t)?'↻ '+Math.max(0,Math.round((t-Date.now())/1000))+'s':''};
+const T1=setInterval(()=>{$('#fu').textContent=cd(SRC);$('#nu').textContent=cd(NSRC);const n=new Date();const at=Math.min(...[...SRC,...NSRC].map(x=>x.at||Infinity));$('#nxt').textContent=document.hidden?'paused':isFinite(at)?Math.max(0,Math.round((at-Date.now())/1000))+'s':'—';$('#utc').textContent=n.toISOString().slice(11,19);$('#loc').textContent=n.toLocaleTimeString([], {hour12:false})},1000);
 const T2=setInterval(()=>{if(!document.hidden)render()},30e3);
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)SRC.forEach(x=>{clearTimeout(x.t);setTimeout(()=>poll(x),x.delay||0)})});
-addEventListener('pagehide',()=>{clearInterval(T1);clearInterval(T2);RO&&RO.disconnect();SRC.forEach(x=>clearTimeout(x.t))}); // refresh relative times and source countdowns
+addEventListener('online',()=>[...SRC,...NSRC].forEach(x=>{clearTimeout(x.t);setTimeout(()=>poll(x),x.delay||0)}));addEventListener('offline',render);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)[...SRC,...NSRC].forEach(x=>{clearTimeout(x.t);setTimeout(()=>poll(x),x.delay||0)})});
+addEventListener('pagehide',()=>{clearInterval(T1);clearInterval(T2);RO&&RO.disconnect();[...SRC,...NSRC].forEach(x=>clearTimeout(x.t))}); // refresh relative times and source countdowns
 
 $('#more').onclick=e=>{const b=e.target.closest('[data-id]');if(b){select(b.dataset.id,true);scrollTo({top:0,behavior:'smooth'})}};
-tick();initMap();$('#zi').onclick=()=>fitIndia(true);$('#zw').onclick=()=>map&&map.flyTo([20,10],2);renderDetail();SRC.forEach(x=>setTimeout(()=>poll(x),x.delay||0));render();
+tick();initMap();$('#zi').onclick=()=>fitIndia(true);$('#zw').onclick=()=>map&&map.flyTo([20,10],2);renderDetail();[...SRC,...NSRC].forEach(x=>setTimeout(()=>poll(x),x.delay||0));render();
 </script></body></html>
