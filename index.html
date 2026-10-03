@@ -907,6 +907,12 @@ function demoData(){const n=Date.now(),d=[['earthquake','critical',35.1,139.4,'J
  return d.map((x,i)=>({id:'demo:'+i,type:x[0],title:'[SYNTHETIC] '+x[0]+' sample',sev:x[1],lat:x[2],lon:x[3],country:x[4],ts:n-i*6e5,upd:n-i*6e5,source:'SYNTHETIC',url:'',status:'DEMO / SIMULATED',desc:'Synthetic data for interface demonstration. Not a real-world incident.'}))}
 
 async function getJSON(u,xml){if(navigator.onLine===false)throw new Error('no internet connection');const ac=new AbortController(),to=setTimeout(()=>ac.abort(),12e3);try{const r=await fetch(u,{signal:ac.signal,cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);if(xml){const d=new DOMParser().parseFromString(await r.text(),'text/xml');if(d.querySelector('parsererror'))throw new Error('unreadable feed');return d}return await r.json()}finally{clearTimeout(to)}}
+const CSPB=new Set();document.addEventListener('securitypolicyviolation',e=>{try{CSPB.add(new URL(e.blockedURI).hostname)}catch{}});
+async function diagnose(s){const u=s.urlf?s.urlf():s.url;let h='';try{h=new URL(u).hostname}catch{}
+ if(CSPB.has(h))return"blocked by this page's security policy (typical inside a preview or sandbox). Open index.html directly in Chrome, Firefox or Safari.";
+ try{await Promise.race([fetch(u,{mode:'no-cors',cache:'no-store'}),new Promise((_,r)=>setTimeout(()=>r(new Error('t')),8e3))]);return'provider is reachable but does not allow browser pages to read it (no CORS)'}
+ catch{return'cannot reach the provider at all: network, firewall, VPN, ad-blocker, or a page security policy. If you are in a preview, open index.html directly in your browser.'}}
+const flash=s=>{const el=$(NSRC.includes(s)?'#nu':'#fu');if(!el)return;el.classList.remove('fl');void el.offsetWidth;el.classList.add('fl')};
 async function fetchSrc(s){const j=await getJSON(s.urlf?s.urlf():s.url);s.via='direct';return j}
 const friendly=e=>navigator.onLine===false?'no internet connection':e.name==='AbortError'?'timeout':e.name==='TypeError'?'blocked by browser (CORS) or network error'+(S.relay?'; relay also failed':''):e.name==='SyntaxError'?'unexpected response (possibly rate-limited)':e.message;
 async function poll(s){
