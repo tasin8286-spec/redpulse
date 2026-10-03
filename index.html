@@ -811,6 +811,14 @@ a.nw2:hover{background:#2a0808}.nw2 b{color:var(--c);font-size:10px;letter-spaci
 .fl{animation:fl 1.2s}@keyframes fl{0%{color:#fff;text-shadow:0 0 10px #f00}100%{}}
 .nbadge{background:#ff1e1e;color:#fff!important;padding:0 5px;margin-right:4px}.nw2.nw{background:#2a0707;animation:in .4s}
 .pu{color:#00d084}.pd{color:#ff4d4d}.rup{animation:rup 1.2s}.rdn{animation:rdn 1.2s}@keyframes rup{0%{background:rgba(0,208,132,.35)}100%{background:none}}@keyframes rdn{0%{background:rgba(255,30,30,.4)}100%{background:none}}
+.ev.nw,.nw2.nw{animation:none}.ev.an,.nw2.an{animation:in .4s}
+
+.mc.cr{grid-column:span 2}
+.mc[data-k=att] .mb,.mc.cr .mb{height:340px;max-height:340px;overflow:auto}
+.mc[data-k=att] .tw,.mc.cr .tw{overflow:visible}
+.mc.cr .tb th,.mc[data-k=att] .tb th{top:0;z-index:1}
+.mc.cr .tb{min-width:520px}
+@media(max-width:900px){.mc.cr{grid-column:auto}}
 </style></head><body>
 <header>
 <div class="brand"><h1>REDPULSE</h1><span class="lbl">Global threat monitor</span></div><svg class="ecg" viewBox="0 0 120 24" aria-hidden="true"><polyline points="0,12 22,12 28,12 32,3 38,21 43,12 70,12 76,12 80,5 86,19 90,12 120,12"/></svg>
@@ -841,7 +849,7 @@ a.nw2:hover{background:#2a0808}.nw2 b{color:var(--c);font-size:10px;letter-spaci
 <section id="side"><h2><span>Top global news <span id="nwc" class="lbl"></span></span><span id="nu" class="lbl mono" title="Next automatic refresh"></span></h2><div class="tools" id="nrg" role="group" aria-label="News region"></div><div class="scroll" id="news" aria-live="polite"></div><h2>Event details</h2><div id="detail" class="scroll"></div></section>
 <section id="stats" aria-label="Statistics"></section>
 </main>
-<div class="more" style="padding-bottom:8px"><section class="mc wide"><h2><span>Crypto market · live</span><span id="mu" class="lbl mono"></span></h2><div id="mkt" class="mb"></div></section><section class="mc"><h2>Regional monitor</h2><div id="regions"></div></section><section class="mc"><h2>Data sources</h2><div id="sources"></div></section></div>
+<div class="more" style="padding-bottom:8px"><section class="mc cr"><h2><span>Crypto market · live</span><span id="mu" class="lbl mono"></span></h2><div id="mkt" class="mb"></div></section><section class="mc"><h2>Regional monitor</h2><div id="regions"></div></section><section class="mc"><h2>Data sources</h2><div id="sources"></div></section></div>
 <div id="more" class="more"></div>
 <script>/* @preserve
  * Leaflet 1.9.4, a JS library for interactive maps. https://leafletjs.com
@@ -858,7 +866,7 @@ const TYPES=['all','terror','blast','hijack','earthquake','weather','fire','floo
 const REGIONS=['North America','South America','Europe','Africa','Middle East','Asia','Oceania','Arctic / Antarctic'];
 const region=(la,lo)=>la>66||la<-60?'Arctic / Antarctic':lo<-30?(la>12?'North America':'South America'):lo<-25&&la>12?'North America':
  (lo>=-20&&lo<45&&la>=35)?'Europe':(lo>=-20&&lo<52&&la<35&&la>-36&&!(lo>34&&la>12))?'Africa':(lo>=34&&lo<60&&la>12&&la<38)?'Middle East':lo>110&&la<-8||lo>150||(lo>110&&la<0)?'Oceania':'Asia';
-const S={type:'all',sev:'',sort:'time',q:'',region:'',sel:null,zones:true,utc:true,sound:false,notify:false,demo:false,seen:new Set(),nf:new Map(),nfirst:1,relay:true,rng:864e5,log:[],fs:new Map(),lastNote:0,first:true};
+const S={type:'all',sev:'',sort:'time',q:'',region:'',sel:null,zones:true,utc:true,sound:false,notify:false,demo:false,seen:new Set(),anim:new Set(),nf:new Map(),nfirst:1,relay:true,rng:864e5,log:[],fs:new Map(),lastNote:0,first:true};
 const utc=x=>Date.parse(/Z|[+-]\d\d:?\d\d$/.test(x)?x:x+'Z');
 const pNWS=j=>(j.features||[]).slice(0,150).map(f=>{const p=f.properties||{},g=f.geometry;if(!g)return null;const pts=[];(function w(c){typeof c[0]==='number'?pts.push(c):c.forEach(w)})(g.coordinates);if(!pts.length)return null;
  const lo=pts.reduce((a,c)=>a+c[0],0)/pts.length,la=pts.reduce((a,c)=>a+c[1],0)/pts.length,ev=p.event||'Alert';
@@ -977,10 +985,14 @@ function renderNews(){const q=S.q.toLowerCase(),seen=new Set(),nowT=Date.now();
   .filter(n=>(!NEWSR||n.region===NEWSR)&&(!q||(n.title+n.cat+n.src+n.region).toLowerCase().includes(q))).sort((x,y)=>y.ts-x.ts);
  a.forEach(n=>{if(!S.nf.has(n.id))S.nf.set(n.id,S.nfirst?0:nowT)});S.nf.forEach((v,k)=>{if(!NSRC.some(x=>x.ev.some(y=>y.id===k)))S.nf.delete(k)});if(NSRC.some(x=>x.st==='ok'))S.nfirst=0;
  $('#nwc').textContent='('+a.length+')';
- $('#news').innerHTML=a.length?a.slice(0,80).map(n=>{const nwn=S.nf.get(n.id)>0&&nowT-S.nf.get(n.id)<9e4,col=catCol(n.cat),when=n.kind==='WIKI'?new Date(n.day).toUTCString().slice(5,11)+' (UTC day)':fmt(n.ts)+' · <span data-ago="'+n.ts+'">'+ago(n.ts)+'</span>',
-  inner=`${nwn?'<b class="nbadge">NEW</b> ':''}<b>${esc(n.region.toUpperCase())}</b> · ${esc(n.cat)}<span class="tt">${esc(n.title)}</span><div class="mono">${when} · ${esc(n.src)} · ${n.kind==='WIKI'?'WIKIPEDIA CURRENT EVENTS':n.kind==='SOCIAL'?'NEWS ORG POST · BLUESKY':'THE GUARDIAN API'}</div>`;
-  return n.url?`<a class="nw2${nwn?' nw':''}" style="--c:${col}" href="${esc(n.url)}" target="_blank" rel="noopener noreferrer">${inner}</a>`:`<div class="nw2${nwn?' nw':''}" style="--c:${col}">${inner}</div>`}).join('')
-  :'<p class="lbl" style="padding:14px">'+(NSRC.every(s=>s.st!=='ok')?'News sources unavailable right now. Retrying automatically.':'No headlines match this filter.')+'</p>'}
+ const ne=$('#news'),nl=a.slice(0,80).map(n=>({n,nwn:S.nf.get(n.id)>0&&nowT-S.nf.get(n.id)<9e4})),nsig=nl.map(x=>x.n.id+(x.nwn?1:0)).join('|')||('empty'+NSRC.every(x=>x.st!=='ok'));
+ if(ne._sig!==nsig){ne._sig=nsig;const st=ne.scrollTop;
+  ne.innerHTML=nl.length?nl.map(({n,nwn})=>{const an=nwn&&!S.anim.has(n.id);if(an)S.anim.add(n.id);const col=catCol(n.cat),when=n.kind==='WIKI'?new Date(n.day).toUTCString().slice(5,11)+' (UTC day)':fmt(n.ts)+' · <span data-ago="'+n.ts+'">'+ago(n.ts)+'</span>',
+   inner=`${nwn?'<b class="nbadge">NEW</b> ':''}<b>${esc(n.region.toUpperCase())}</b> · ${esc(n.cat)}<span class="tt">${esc(n.title)}</span><div class="mono">${when} · ${esc(n.src)} · ${n.kind==='WIKI'?'WIKIPEDIA CURRENT EVENTS':n.kind==='SOCIAL'?'NEWS ORG POST · BLUESKY':'THE GUARDIAN API'}</div>`,cl='nw2'+(nwn?' nw':'')+(an?' an':'');
+   return n.url?`<a class="${cl}" style="--c:${col}" href="${esc(n.url)}" target="_blank" rel="noopener noreferrer">${inner}</a>`:`<div class="${cl}" style="--c:${col}">${inner}</div>`}).join('')
+   :'<p class="lbl" style="padding:14px">'+(NSRC.every(x=>x.st!=='ok')?'News sources unavailable right now. Retrying automatically.':'No headlines match this filter.')+'</p>';
+  ne.scrollTop=st;if(S.anim.size>800)S.anim.clear()}}
+
 $('#nrg').innerHTML=['All'].concat(REGIONS,['Global']).map(r=>`<button class="chip" data-n="${r==='All'?'':r}" aria-pressed="${r==='All'}">${r}</button>`).join('');
 $('#nrg').onclick=e=>{const b=e.target.closest('[data-n]');if(!b)return;NEWSR=b.dataset.n;document.querySelectorAll('#nrg button').forEach(x=>x.setAttribute('aria-pressed',x===b));renderNews()};
 const CC=new Map();
@@ -1007,7 +1019,8 @@ function tick(){const el=$('#tkin');if(!el)return;const it=S.log.filter(x=>!x.q)
  el.innerHTML=txt;el.style.setProperty('--d',Math.max(30,it.reduce((a,x)=>a+x.msg.length,0)*.22)+'s')}
 let lastAll=[];
 const bars=r=>{const m=Math.max(1,...r.map(x=>x[1]));return r.length?r.map(x=>`<div class="br"><span>${esc(x[0])}</span><div class="bt"><div class="bf" style="width:${x[1]/m*100}%;${x[2]?'--c:'+x[2]:''}"></div></div><b class="mono">${x[1]}</b></div>`).join(''):'<p class="lbl" style="padding:10px">No data.</p>'};
-const card=(t,b,w)=>`<section class="mc${w?' wide':''}"><h2>${t}</h2><div class="mb">${b}</div></section>`;
+const CRY=document.querySelector('#mkt').closest('section');
+const card=(t,b,w)=>`<section class="mc${w?' wide':''}"${/Reported attacks/.test(t)?' data-k="att"':''}><h2>${t}</h2><div class="mb">${b}</div></section>`;
 const evBtn=e=>`<button class="ev" style="--c:${SEV[e.sev].c}" data-id="${esc(e.id)}"><b>${SEV[e.sev].i} ${SEV[e.sev].l}</b> · ${esc(e.type.toUpperCase())}<br>${esc(e.title)}<div class="mono">${fmt(e.ts)} · ${ago(e.ts)} · ${esc(e.source)}</div></button>`;
 const tbl=(h,rows)=>rows.length?`<div class="tw"><table class="tb"><thead><tr>${h.map(x=>'<th>'+x+'</th>').join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`:'<p class="lbl" style="padding:10px">No data.</p>';
 function renderMore(L){
@@ -1043,7 +1056,7 @@ function renderMore(L){
  card('Reported attacks, blasts &amp; hijacks (Wikipedia, approximate location)',tbl(['Report','Country','Date (UTC)'],md))+
  card('Live update log (this session only)',tbl(['Time (UTC)','Source','Update'],S.log.slice(0,40).map(x=>`<tr><td class="mono">${new Date(x.t).toISOString().slice(11,19)}</td><td>${esc(x.src)}</td><td>${esc(x.msg)}</td></tr>`)),1)+
  card('Data source health',tbl(['Source','Status','Events','Interval','Last OK','Next','Error'],sr),1)+
- card('About this data',about,1)}
+ card('About this data',about,1);const att=$('#more [data-k=att]');if(att)att.after(CRY)}
 function drawMap(list){
  if(!layer)return;const sig=S.zones+'|'+list.slice(0,800).map(e=>e.id+e.sev).join(',');if(sig===drawMap.sig)return;drawMap.sig=sig;layer.clearLayers();
  if(S.zones)list.slice(0,300).forEach(e=>{const m={critical:4e5,high:25e4,moderate:12e4}[e.sev];if(m)L.circle([e.lat,e.lon],{radius:m,stroke:false,fillColor:SEV[e.sev].c,fillOpacity:e.sev==='critical'?.2:.1,interactive:false}).addTo(layer)});
@@ -1071,9 +1084,11 @@ function render(){
  if(CC.size>1000)CC.clear();
  // feed
  const nn=SRC.reduce((a,x)=>a+(x.newN||0),0);$('#cnt').textContent='('+list.length+')'+(nn?' +'+nn+' new':'');
- $('#feed').innerHTML=list.length?list.slice(0,200).map(e=>{const c=SEV[e.sev];
-  const nw=S.fs.get(e.id)>0&&now-S.fs.get(e.id)<6e4;
-  return`<button class="ev${nw?' nw':''}" style="--c:${c.c}" data-id="${esc(e.id)}"><b>${c.i} ${c.l}</b> · ${esc(e.type.toUpperCase())}<br>${esc(e.title)}<div class="mono">${fmt(e.ts)} · <span data-ago="${e.ts}">${ago(e.ts)}</span> · ${esc(e.source)} · ${esc(e.status)}</div></button>`}).join(''):'<p class="lbl" style="padding:14px">No events in this time range or filter. Widen the time range above.</p>';
+ const fe=$('#feed'),fl=list.slice(0,200).map(e=>({e,nw:S.fs.get(e.id)>0&&now-S.fs.get(e.id)<6e4})),fsig=fl.map(x=>x.e.id+(x.nw?1:0)).join('|')||'empty';
+ if(fe._sig!==fsig){fe._sig=fsig;const st=fe.scrollTop;
+  fe.innerHTML=fl.length?fl.map(({e,nw})=>{const c=SEV[e.sev],an=nw&&!S.anim.has(e.id);if(an)S.anim.add(e.id);
+   return`<button class="ev${nw?' nw':''}${an?' an':''}" style="--c:${c.c}" data-id="${esc(e.id)}"><b>${c.i} ${c.l}</b> · ${esc(e.type.toUpperCase())}<br>${esc(e.title)}<div class="mono">${fmt(e.ts)} · <span data-ago="${e.ts}">${ago(e.ts)}</span> · ${esc(e.source)} · ${esc(e.status)}</div></button>`}).join(''):'<p class="lbl" style="padding:14px">No events in this time range or filter. Widen the time range above.</p>';
+  fe.scrollTop=st}
  lastAll=all;drawMap(list);renderMore(list);renderNews();renderMkt();
  // stats
  const cnt=k=>all.filter(e=>e.sev===k).length,d24=all.filter(e=>e.ts>Date.now()-864e5).length;
