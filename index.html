@@ -819,6 +819,18 @@ a.nw2:hover{background:#2a0808}.nw2 b{color:var(--c);font-size:10px;letter-spaci
 .mc.cr .tb th,.mc[data-k=att] .tb th{top:0;z-index:1}
 .mc.cr .tb{min-width:520px}
 @media(max-width:900px){.mc.cr{grid-column:auto}}
+
+/* every block is a box */
+#stats{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;background:none!important;border:0!important;box-shadow:none!important;padding:0}
+#stats .card{flex:none;border:1px solid var(--b)!important;border-top:2px solid var(--red)!important;background:linear-gradient(180deg,rgba(40,4,6,.55),rgba(10,3,4,.94) 60px);box-shadow:0 0 14px rgba(255,0,0,.12);padding:10px 12px}
+.more{gap:8px;padding:0 8px 8px}
+.mc .mb{height:320px;max-height:320px;overflow:auto}
+.mc>#regions,.mc>#sources{height:320px;overflow:auto;flex:none}
+.mc.wide .mb{height:320px}
+.mc[data-k=att] .mb,.mc.cr .mb{height:320px;max-height:320px}
+#more{padding-bottom:28px}
+@media(max-width:900px){#stats{grid-template-columns:repeat(2,1fr)}#stats .card{border-bottom:1px solid var(--b)!important}}
+#fu,#nu,#mu{display:none!important}
 </style></head><body>
 <header>
 <div class="brand"><h1>REDPULSE</h1><span class="lbl">Global threat monitor</span></div><svg class="ecg" viewBox="0 0 120 24" aria-hidden="true"><polyline points="0,12 22,12 28,12 32,3 38,21 43,12 70,12 76,12 80,5 86,19 90,12 120,12"/></svg>
@@ -827,8 +839,8 @@ a.nw2:hover{background:#2a0808}.nw2 b{color:var(--c);font-size:10px;letter-spaci
 <span id="alert" class="pill" tabindex="0" title="Global alert level is an interface aggregation based on currently detected events: CRITICAL if any critical event, HIGH if 5+ high, ELEVATED if any high, else NORMAL."></span>
 <span><span class="lbl">UTC</span> <time id="utc" class="mono"></time></span>
 <span><span class="lbl">Local</span> <time id="loc" class="mono"></time></span>
-<span><span class="lbl">Last update</span> <time id="last" class="mono">—</time></span>
-<span><span class="lbl">Next refresh</span> <time id="nxt" class="mono">—</time></span>
+<span hidden><span class="lbl">Last update</span> <time id="last" class="mono">—</time></span>
+<span hidden><span class="lbl">Next refresh</span> <time id="nxt" class="mono">—</time></span>
 <span style="flex:1"></span>
 <input id="q" type="search" placeholder="Search country, event, source, ID" aria-label="Search events">
 <button id="tz" aria-pressed="false" title="Toggle timestamp display">UTC</button>
@@ -849,7 +861,7 @@ a.nw2:hover{background:#2a0808}.nw2 b{color:var(--c);font-size:10px;letter-spaci
 <section id="side"><h2><span>Top global news <span id="nwc" class="lbl"></span></span><span id="nu" class="lbl mono" title="Next automatic refresh"></span></h2><div class="tools" id="nrg" role="group" aria-label="News region"></div><div class="scroll" id="news" aria-live="polite"></div><h2>Event details</h2><div id="detail" class="scroll"></div></section>
 <section id="stats" aria-label="Statistics"></section>
 </main>
-<div class="more" style="padding-bottom:8px"><section class="mc cr"><h2><span>Crypto market · live</span><span id="mu" class="lbl mono"></span></h2><div id="mkt" class="mb"></div></section><section class="mc"><h2>Regional monitor</h2><div id="regions"></div></section><section class="mc"><h2>Data sources</h2><div id="sources"></div></section></div>
+<div class="more" style="padding-bottom:8px"><section class="mc cr"><h2><span>Crypto market · live</span><span id="mu" class="lbl mono"></span></h2><div id="mkt" class="mb"></div></section><section class="mc"><h2>Regional monitor</h2><div id="regions"></div></section><section class="mc"><h2><span>India &amp; South Asia headlines</span></h2><div id="insa" class="mb"></div></section></div>
 <div id="more" class="more"></div>
 <script>/* @preserve
  * Leaflet 1.9.4, a JS library for interactive maps. https://leafletjs.com
@@ -872,7 +884,7 @@ const pNWS=j=>(j.features||[]).slice(0,150).map(f=>{const p=f.properties||{},g=f
  const lo=pts.reduce((a,c)=>a+c[0],0)/pts.length,la=pts.reduce((a,c)=>a+c[1],0)/pts.length,ev=p.event||'Alert';
  return{id:'nws:'+f.id,type:/flood/i.test(ev)?'flood':/fire/i.test(ev)?'fire':'weather',title:ev+' — '+(p.areaDesc||'').slice(0,80),sev:p.severity==='Extreme'?'critical':p.severity==='Severe'?'high':'moderate',lat:la,lon:lo,country:'',ts:Date.parse(p.sent||p.effective)||Date.now(),upd:Date.parse(p.sent)||Date.now(),source:'NOAA NWS',url:'https://alerts.weather.gov/',status:'OFFICIAL ALERT',desc:(p.headline||ev)+(p.expires?' · expires '+p.expires:'')}}).filter(Boolean);
 const SRC=[
- {id:'usgs',name:'USGS',kind:'Earthquakes',url:'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson',every:30e3,parse:pUSGS},
+ {id:'usgs',name:'USGS',kind:'Earthquakes',url:'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson',every:15e3,parse:pUSGS},
  {id:'eonet',name:'NASA EONET',kind:'Natural events',url:'https://eonet.gsfc.nasa.gov/api/v3/events?status=open&limit=150',every:30e3,parse:pEONET},
  {id:'nws',name:'NOAA NWS',kind:'US severe weather alerts',url:'https://api.weather.gov/alerts/active?status=actual&message_type=alert&severity=Extreme,Severe',every:30e3,delay:3e3,parse:pNWS},
 ].map(s=>({...s,st:'pending',ev:[],last:0,fails:0,err:'',t:null}));
@@ -888,7 +900,7 @@ const pWiki=d=>j=>{const html=j&&j.parse&&j.parse.text&&j.parse.text['*'];if(!ht
   else if(tg==='DIV')walk(c)}};
  walk(root);return out};
 const pBsky=name=>j=>(j.feed||[]).filter(f=>!f.reason&&f.post&&f.post.record).map(f=>{const p=f.post,r=p.record,ex=p.embed&&p.embed.external,rk=String(p.uri).split('/').pop(),link=ex&&/^https:\/\//.test(ex.uri)?ex.uri:'https://bsky.app/profile/'+p.author.handle+'/post/'+rk,t=(ex&&ex.title&&ex.title.length>15?ex.title:r.text||'').replace(/\s+/g,' ').trim();
- return{id:'bs:'+p.uri,kind:'SOCIAL',cat:'News post',title:t.slice(0,240),src:name,url:link,ts:Date.parse(r.createdAt)||Date.now(),day:0}}).filter(n=>n.title.length>10);
+ return{id:'bs:'+p.uri,kind:'SOCIAL',cat:'News post',title:t.slice(0,240),src:name,lab:'NEWS ORG POST · BLUESKY',url:link,ts:Date.parse(r.createdAt)||Date.now(),day:0}}).filter(n=>n.title.length>10);
 const bsky=h=>'https://public.api.bsky.app/xrpc/app.bsky.feed.getAuthorFeed?actor='+h+'&limit=15&filter=posts_no_replies';
 const pGuardian=j=>((j.response||{}).results||[]).map(a=>({id:'gu:'+a.id,kind:'RSS',cat:a.sectionName||'World',title:String(a.webTitle).slice(0,240),src:'The Guardian',url:a.webUrl,ts:Date.parse(a.webPublicationDate)||Date.now(),day:0}));
 const PX=new Map();
@@ -898,15 +910,29 @@ const BN=['BTC:Bitcoin','ETH:Ethereum','BNB:BNB','SOL:Solana','XRP:XRP','DOGE:Do
 const pBN=j=>{const m=new Map((Array.isArray(j)?j:[]).map(t=>[t.symbol,t]));return BN.map(x=>x.split(':')).filter(x=>m.has(x[0]+'USDT')).map(x=>{const t=m.get(x[0]+'USDT'),pr=+t.lastPrice,old=PX.get(x[0]);PX.set(x[0],pr);
  return{id:'c:'+x[0],market:1,sym:x[0],name:x[1],price:pr,ch1:null,ch24:+t.priceChangePercent,cap:0,vol:+t.quoteVolume,dir:old==null?0:Math.sign(pr-old),ts:t.closeTime||Date.now()}})};
 const bnUrl='https://data-api.binance.vision/api/v3/ticker/24hr?symbols='+encodeURIComponent(JSON.stringify(BN.map(x=>x.split(':')[0]+'USDT')));
+const pReddit=name=>j=>(((j||{}).data||{}).children||[]).map(c=>c.data).filter(d=>d&&!d.over_18&&!d.stickied&&d.title).map(d=>{const ext=/^https:\/\//.test(d.url||'')&&!/reddit\.com|redd\.it/.test(d.url);
+ return{id:'rd:'+d.id,kind:'SOCIAL',lab:'REDDIT POST · UNVERIFIED',cat:'Reddit · r/'+d.subreddit,title:String(d.title).slice(0,240),src:name,url:ext?d.url:'https://www.reddit.com'+d.permalink,ts:(d.created_utc||Date.now()/1e3)*1e3,day:0}});
+const pMasto=j=>(Array.isArray(j)?j:[]).filter(t=>!t.sensitive&&!t.reblog&&t.content).map(t=>{const tx=(new DOMParser().parseFromString(t.content,'text/html').body.textContent||'').replace(/\s+/g,' ').trim();
+ return{id:'ms:'+t.id,kind:'SOCIAL',lab:'MASTODON POST · UNVERIFIED',cat:'Mastodon',title:tx.slice(0,240),src:'Mastodon #breakingnews',url:/^https:\/\//.test(t.url||'')?t.url:'',ts:Date.parse(t.created_at)||Date.now(),day:0}}).filter(n=>n.title.length>30);
+const rdu=path=>'https://www.reddit.com/'+path+'/new.json?limit=25&raw_json=1';
 const NSRC=[
- {id:'b-reuters',name:'Reuters',kind:'Live news posts',url:bsky('reuters.com'),every:30e3,delay:300,parse:pBsky('Reuters')},
- {id:'b-ap',name:'AP News',kind:'Live news posts',url:bsky('apnews.com'),every:30e3,delay:900,parse:pBsky('AP News')},
- {id:'b-aj',name:'Al Jazeera',kind:'Live news posts',url:bsky('aljazeera.com'),every:30e3,delay:1500,parse:pBsky('Al Jazeera')},
- {id:'b-nyt',name:'New York Times',kind:'Live news posts',url:bsky('nytimes.com'),every:30e3,delay:2100,parse:pBsky('New York Times')},
- {id:'b-cnn',name:'CNN',kind:'Live news posts',url:bsky('cnn.com'),every:30e3,delay:2700,parse:pBsky('CNN')},
- {id:'b-dw',name:'DW News',kind:'Live news posts',url:bsky('dw.com'),every:30e3,delay:3300,parse:pBsky('DW News')},
+ {id:'b-reuters',name:'Reuters',kind:'Live news posts',url:bsky('reuters.com'),every:15e3,delay:300,parse:pBsky('Reuters')},
+ {id:'b-ap',name:'AP News',kind:'Live news posts',url:bsky('apnews.com'),every:15e3,delay:900,parse:pBsky('AP News')},
+ {id:'b-aj',name:'Al Jazeera',kind:'Live news posts',url:bsky('aljazeera.com'),every:15e3,delay:1500,parse:pBsky('Al Jazeera')},
+ {id:'b-nyt',name:'New York Times',kind:'Live news posts',url:bsky('nytimes.com'),every:15e3,delay:2100,parse:pBsky('New York Times')},
+ {id:'b-cnn',name:'CNN',kind:'Live news posts',url:bsky('cnn.com'),every:15e3,delay:2700,parse:pBsky('CNN')},
+ {id:'b-it',name:'India Today',kind:'Live news posts',url:bsky('indiatoday.in'),every:15e3,delay:3600,parse:pBsky('India Today')},
+ {id:'b-wion',name:'WION',kind:'Live news posts',url:bsky('wionews.com'),every:15e3,delay:3900,parse:pBsky('WION')},
+ {id:'b-ndtv',name:'NDTV',kind:'Live news posts',url:bsky('ndtv.com'),every:15e3,delay:4200,parse:pBsky('NDTV')},
+ {id:'r-wion',name:'WION (links on Reddit)',kind:'Reddit domain feed',url:rdu('domain/wionews.com'),every:60e3,delay:4500,parse:pReddit('WION (shared on Reddit)')},
+ {id:'r-it',name:'India Today (links on Reddit)',kind:'Reddit domain feed',url:rdu('domain/indiatoday.in'),every:60e3,delay:10500,parse:pReddit('India Today (shared on Reddit)')},
+ {id:'r-world',name:'Reddit r/worldnews',kind:'Live posts',url:rdu('r/worldnews'),every:60e3,delay:16500,parse:pReddit('Reddit r/worldnews')},
+ {id:'r-news',name:'Reddit r/news',kind:'Live posts',url:rdu('r/news'),every:60e3,delay:22500,parse:pReddit('Reddit r/news')},
+ {id:'r-india',name:'Reddit r/india',kind:'Live posts',url:rdu('r/india'),every:60e3,delay:28500,parse:pReddit('Reddit r/india')},
+ {id:'mastodon',name:'Mastodon',kind:'#breakingnews posts',url:'https://mastodon.social/api/v1/timelines/tag/breakingnews?limit=20',every:30e3,delay:5000,parse:pMasto},
+ {id:'b-dw',name:'DW News',kind:'Live news posts',url:bsky('dw.com'),every:15e3,delay:3300,parse:pBsky('DW News')},
  {id:'guardian',name:'The Guardian',kind:'World news API',url:'https://content.guardianapis.com/search?section=world&order-by=newest&page-size=20&api-key=test',every:30e3,delay:3900,parse:pGuardian},
- {id:'crypto',name:'CoinGecko',kind:'Crypto market',market:1,url:'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=12&page=1&sparkline=false&price_change_percentage=1h,24h',every:30e3,delay:200,parse:pMkt,alts:[{url:bnUrl,parse:pBN}]},
+ {id:'crypto',name:'CoinGecko',kind:'Crypto market',market:1,url:'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=12&page=1&sparkline=false&price_change_percentage=1h,24h',every:15e3,delay:200,parse:pMkt,alts:[{url:bnUrl,parse:pBN}]},
  {id:'wiki0',name:'Wikipedia',kind:'Current events (today)',urlf:()=>wikiUrl(0),every:30e3,parse:pWiki(0)},
 ].map(s=>({...s,st:'pending',ev:[],last:0,fails:0,err:'',t:null}));
 
@@ -924,23 +950,17 @@ function demoData(){const n=Date.now(),d=[['earthquake','critical',35.1,139.4,'J
  return d.map((x,i)=>({id:'demo:'+i,type:x[0],title:'[SYNTHETIC] '+x[0]+' sample',sev:x[1],lat:x[2],lon:x[3],country:x[4],ts:n-i*6e5,upd:n-i*6e5,source:'SYNTHETIC',url:'',status:'DEMO / SIMULATED',desc:'Synthetic data for interface demonstration. Not a real-world incident.'}))}
 
 async function getJSON(u,xml){if(navigator.onLine===false)throw new Error('no internet connection');const ac=new AbortController(),to=setTimeout(()=>ac.abort(),12e3);try{const r=await fetch(u,{signal:ac.signal,cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);if(xml){const d=new DOMParser().parseFromString(await r.text(),'text/xml');if(d.querySelector('parsererror'))throw new Error('unreadable feed');return d}return await r.json()}finally{clearTimeout(to)}}
-const CSPB=new Set();document.addEventListener('securitypolicyviolation',e=>{try{CSPB.add(new URL(e.blockedURI).hostname)}catch{}});
-async function diagnose(s){const u=s.urlf?s.urlf():s.url;let h='';try{h=new URL(u).hostname}catch{}
- if(CSPB.has(h))return"blocked by this page's security policy (typical inside a preview or sandbox). Open index.html directly in Chrome, Firefox or Safari.";
- try{await Promise.race([fetch(u,{mode:'no-cors',cache:'no-store'}),new Promise((_,r)=>setTimeout(()=>r(new Error('t')),8e3))]);return'provider is reachable but the browser cannot read its reply (no CORS: it may not allow browser pages, or it is rate-limiting or blocking this connection)'}
- catch{return'cannot reach the provider at all: network, firewall, VPN, ad-blocker, or a page security policy. If you are in a preview, open index.html directly in your browser.'}}
 const flash=s=>{const el=$(s.market?'#mu':NSRC.includes(s)?'#nu':'#fu');if(!el)return;el.classList.remove('fl');void el.offsetWidth;el.classList.add('fl')};
 async function fetchSrc(s){let first;for(const c of [{url:s.urlf?s.urlf():s.url,parse:s.parse},...(s.alts||[])]){try{const j=await getJSON(c.url);s.cur=c.parse;s.via=c===undefined?'':'direct';return j}catch(e){first=first||e}}throw first}
-const friendly=e=>navigator.onLine===false?'no internet connection':e.name==='AbortError'?'timeout':e.name==='TypeError'?'blocked by browser (CORS) or network error'+(S.relay?'; relay also failed':''):e.name==='SyntaxError'?'unexpected response (possibly rate-limited)':e.message;
+const friendly=e=>/HTTP (400|404)/.test(e.message)?'account or feed not found (will retry hourly)':navigator.onLine===false?'no internet connection':e.name==='AbortError'?'timeout':e.name==='TypeError'?'blocked by browser (CORS) or network error'+(S.relay?'; relay also failed':''):e.name==='SyntaxError'?'unexpected response (possibly rate-limited)':e.message;
 async function poll(s){
  if(s.busy)return;s.busy=1;
  try{const j=await fetchSrc(s);
-  const prev=new Set(s.ev.map(e=>e.id)),was=s.st,nm=s.name+' · '+s.kind;s.ev=(s.cur||s.parse)(j);const fresh=s.last?s.ev.filter(e=>!prev.has(e.id)):[];s.newN=fresh.length;s.st='ok';s.last=Date.now();s.fails=0;s.err='';s.diag='';s.blocked=0;flash(s);
-  if(was==='pending')logUp(nm,'connected, '+s.ev.length+' events loaded',1);else if(was==='error')logUp(nm,'back online, '+s.ev.length+' events',1);
-  if(fresh.length)logUp(nm,'+'+fresh.length+' new: '+fresh.slice(0,2).map(e=>e.title).join('; ')+(fresh.length>2?' …':''));}
- catch(e){const was=s.st;s.st='error';s.fails++;s.err=s.diag||friendly(e);s.blocked=/no CORS/.test(s.diag||'');if(e.name==='TypeError'&&!s.diag&&!s.diagging){s.diagging=1;diagnose(s).then(d=>{s.diag=d;s.err=d;s.blocked=/no CORS/.test(d);s.diagging=0;logUp(s.name+' · '+s.kind,'diagnosis — '+d,1);refresh()})}if(was!=='error')logUp(s.name+' · '+s.kind,'OFFLINE — '+s.err,1)}
+  const prev=new Set(s.ev.map(e=>e.id)),was=s.st,nm=s.name+' · '+s.kind;s.ev=(s.cur||s.parse)(j);const fresh=s.last?s.ev.filter(e=>!prev.has(e.id)):[];s.newN=fresh.length;s.st='ok';s.last=Date.now();s.fails=0;s.err='';s.hide=0;
+   if(fresh.length){flash(s)}if(fresh.length)logUp(nm,'+'+fresh.length+' new: '+fresh.slice(0,2).map(e=>e.title).join('; ')+(fresh.length>2?' …':''));}
+ catch(e){s.st='error';s.fails++;s.err=friendly(e);s.hide=!s.last}
  finally{s.busy=0;}
- const wait=s.blocked?12e4:s.st==='ok'?s.every:Math.min(s.every*2**s.fails,6e5);
+ const wait=s.hide?(/not found/.test(s.err)?36e5:3e5):s.st==='ok'?s.every:Math.min(s.every*2**s.fails,6e5);
  clearTimeout(s.t);s.next=wait;s.at=Date.now()+wait;s.t=setTimeout(()=>poll(s),wait);
  refresh();
 }
@@ -978,19 +998,23 @@ const fp=v=>v==null?'—':'$'+(+v).toLocaleString('en-US',{maximumFractionDigits
 const pc=v=>v==null||isNaN(v)?'<span class="mono">—</span>':`<span class="mono ${v>=0?'pu':'pd'}">${v>=0?'▲':'▼'} ${Math.abs(v).toFixed(2)}%</span>`;
 function renderMkt(){const el=$('#mkt');if(!el)return;const rows=NSRC.filter(s=>s.market).flatMap(s=>s.ev);
  el.innerHTML=rows.length?tbl(['#','Coin','Price (USD)','1 h','24 h','Market cap','24 h volume'],rows.map((c,i)=>`<tr class="${c.dir>0?'rup':c.dir<0?'rdn':''}"><td class="mono">${i+1}</td><td><b>${esc(c.sym)}</b> <small>${esc(c.name)}</small></td><td class="mono">${fp(c.price)}</td><td>${pc(c.ch1)}</td><td>${pc(c.ch24)}</td><td class="mono">${c.cap?'$'+nf.format(c.cap):'—'}</td><td class="mono">${c.vol?'$'+nf.format(c.vol):'—'}</td></tr>`))
-  :'<p class="lbl" style="padding:14px">'+(NSRC.filter(s=>s.market).every(s=>s.st!=='ok')?'Crypto market data unavailable right now. Retrying automatically.':'Loading…')+'</p>'}
+  :'<p class="lbl" style="padding:14px">'+(NSRC.filter(s=>s.market).every(s=>s.st!=='ok')?'Connecting to market data…':'Loading…')+'</p>'}
+function renderInsa(){const el=$('#insa');if(!el)return;const re=/\b(India|Indian|Delhi|Mumbai|Modi|Kashmir|Pakistan|Bangladesh|Nepal|Sri Lanka|Bhutan|Maldives|Afghanistan|Dhaka|Islamabad|Kolkata|Chennai|Bengaluru)\b/,seen=new Set();
+ const a=NSRC.filter(x=>!x.market).flatMap(x=>x.ev).filter(n=>re.test(n.title)).filter(n=>{const k=n.title.toLowerCase().slice(0,60);if(seen.has(k))return false;seen.add(k);return true}).sort((x,y)=>y.ts-x.ts).slice(0,25),sig=a.map(n=>n.id).join('|')||'e';
+ if(el._sig===sig)return;el._sig=sig;
+ el.innerHTML=a.length?a.map(n=>{const i=`<span class="tt">${esc(n.title)}</span><div class="mono">${n.kind==='WIKI'?'':fmt(n.ts)+' · '}${esc(n.src)}</div>`;return n.url?`<a class="nw2" style="--c:#ff3b3b" href="${esc(n.url)}" target="_blank" rel="noopener noreferrer">${i}</a>`:`<div class="nw2" style="--c:#ff3b3b">${i}</div>`}).join(''):'<p class="lbl" style="padding:14px">No India or South Asia headlines right now.</p>'}
 function renderNews(){const q=S.q.toLowerCase(),seen=new Set(),nowT=Date.now();
  let a=NSRC.filter(s=>!s.market).flatMap(s=>s.ev).filter(n=>!/sport|arts|culture|entertain/i.test(n.cat)).map(n=>({...n,region:regOf(n.title)}))
   .filter(n=>{const k=n.title.toLowerCase().slice(0,60);if(seen.has(k))return false;seen.add(k);return true})
   .filter(n=>(!NEWSR||n.region===NEWSR)&&(!q||(n.title+n.cat+n.src+n.region).toLowerCase().includes(q))).sort((x,y)=>y.ts-x.ts);
- a.forEach(n=>{if(!S.nf.has(n.id))S.nf.set(n.id,S.nfirst?0:nowT)});S.nf.forEach((v,k)=>{if(!NSRC.some(x=>x.ev.some(y=>y.id===k)))S.nf.delete(k)});if(NSRC.some(x=>x.st==='ok'))S.nfirst=0;
+ a.forEach(n=>{if(!S.nf.has(n.id))S.nf.set(n.id,S.nfirst?0:nowT)});S.nf.forEach((v,k)=>{if(!NSRC.some(x=>x.ev.some(y=>y.id===k)))S.nf.delete(k)});if(NSRC.every(x=>x.st!=='pending'))S.nfirst=0;
  $('#nwc').textContent='('+a.length+')';
  const ne=$('#news'),nl=a.slice(0,80).map(n=>({n,nwn:S.nf.get(n.id)>0&&nowT-S.nf.get(n.id)<9e4})),nsig=nl.map(x=>x.n.id+(x.nwn?1:0)).join('|')||('empty'+NSRC.every(x=>x.st!=='ok'));
  if(ne._sig!==nsig){ne._sig=nsig;const st=ne.scrollTop;
   ne.innerHTML=nl.length?nl.map(({n,nwn})=>{const an=nwn&&!S.anim.has(n.id);if(an)S.anim.add(n.id);const col=catCol(n.cat),when=n.kind==='WIKI'?new Date(n.day).toUTCString().slice(5,11)+' (UTC day)':fmt(n.ts)+' · <span data-ago="'+n.ts+'">'+ago(n.ts)+'</span>',
-   inner=`${nwn?'<b class="nbadge">NEW</b> ':''}<b>${esc(n.region.toUpperCase())}</b> · ${esc(n.cat)}<span class="tt">${esc(n.title)}</span><div class="mono">${when} · ${esc(n.src)} · ${n.kind==='WIKI'?'WIKIPEDIA CURRENT EVENTS':n.kind==='SOCIAL'?'NEWS ORG POST · BLUESKY':'THE GUARDIAN API'}</div>`,cl='nw2'+(nwn?' nw':'')+(an?' an':'');
+   inner=`${nwn?'<b class="nbadge">NEW</b> ':''}<b>${esc(n.region.toUpperCase())}</b> · ${esc(n.cat)}<span class="tt">${esc(n.title)}</span><div class="mono">${when} · ${esc(n.src)} · ${n.kind==='WIKI'?'WIKIPEDIA CURRENT EVENTS':(n.lab||'THE GUARDIAN API')}</div>`,cl='nw2'+(nwn?' nw':'')+(an?' an':'');
    return n.url?`<a class="${cl}" style="--c:${col}" href="${esc(n.url)}" target="_blank" rel="noopener noreferrer">${inner}</a>`:`<div class="${cl}" style="--c:${col}">${inner}</div>`}).join('')
-   :'<p class="lbl" style="padding:14px">'+(NSRC.every(x=>x.st!=='ok')?'News sources unavailable right now. Retrying automatically.':'No headlines match this filter.')+'</p>';
+   :'<p class="lbl" style="padding:14px">'+(NSRC.every(x=>x.st!=='ok')?'Waiting for the latest headlines…':'No headlines match this filter.')+'</p>';
   ne.scrollTop=st;if(S.anim.size>800)S.anim.clear()}}
 
 $('#nrg').innerHTML=['All'].concat(REGIONS,['Global']).map(r=>`<button class="chip" data-n="${r==='All'?'':r}" aria-pressed="${r==='All'}">${r}</button>`).join('');
@@ -1034,13 +1058,12 @@ function renderMore(L){
  const hi=L.filter(e=>e.sev==='critical'||e.sev==='high').sort((a,b)=>b.ts-a.ts).slice(0,10).map(evBtn).join('')||'<p class="lbl" style="padding:10px">No critical or high events.</p>';
  const big=eq.sort((a,b)=>b.m-a.m).slice(0,8).map(x=>evBtn(x.e)).join('')||'<p class="lbl" style="padding:10px">No earthquakes loaded.</p>';
  const md=L.filter(e=>e.id.startsWith('winc:')).sort((a,b)=>b.ts-a.ts).slice(0,12).map(e=>`<tr data-id="${esc(e.id)}" class="clk"><td>${esc(e.title)}</td><td>${esc(e.country)}</td><td class="mono">${new Date(e.ts).toISOString().slice(5,10)}</td></tr>`);
- const sr=[...SRC,...NSRC].map(x=>`<tr><td>${x.name} <small>${x.kind}</small></td><td>${x.st==='ok'?'● CONNECTED'+(x.via==='relay'?' (relay)':''):x.st==='error'?'✕ OFFLINE':'… CONNECTING'}</td><td class="mono">${x.ev.length}</td><td class="mono">${x.every/1000}s</td><td class="mono">${x.last?ago(x.last):'—'}</td><td class="mono">${x.at?Math.max(0,Math.round((x.at-now)/1000))+'s':'—'}</td><td>${esc(x.err||'—')}</td></tr>`);
- const about=`<div class="ab"><p><b>Global alert level</b> is an interface aggregation of loaded events: CRITICAL if any critical event exists, HIGH if 5 or more high events, ELEVATED if any high event, otherwise NORMAL. It is not an official risk rating.</p>
+  const about=`<div class="ab"><p><b>Global alert level</b> is an interface aggregation of loaded events: CRITICAL if any critical event exists, HIGH if 5 or more high events, ELEVATED if any high event, otherwise NORMAL. It is not an official risk rating.</p>
 <p><b>Severity rules.</b> USGS earthquakes: M7+ critical, M6+ high, M4.5+ moderate, below that low. NASA EONET: volcanoes high, storms/fires/floods moderate, other low. NOAA NWS: Extreme critical, Severe high. Wikipedia-derived attack items: high.</p>
 <p><b>Data status.</b> VERIFIED SOURCE = reviewed by the publishing agency. PRELIMINARY = automatic, may be revised. UNVERIFIED = aggregated or media-derived, not confirmed. DEMO / SIMULATED = synthetic sample data shown only when no live source is reachable.</p>
-<p><b>Live sources.</b> USGS (earthquakes), NASA EONET (natural events), NOAA NWS (US severe weather alerts), Wikipedia Current events, and live news: posts from Reuters, AP, Al Jazeera, the New York Times, CNN and DW on Bluesky (public API) plus The Guardian's open API. Crypto prices come from CoinGecko's public API (they can lag the exchanges by a minute or two and are not trading advice). Everything is requested straight from your browser every 30 seconds and nothing is saved: no cookies, local storage or database; old items are dropped when sources stop returning them.</p>
+<p><b>Live sources.</b> USGS (earthquakes), NASA EONET (natural events), NOAA NWS (US severe weather alerts), CoinGecko / Binance (crypto prices) and the news sources listed below. Everything is requested straight from your browser every 15 to 60 seconds, and nothing is saved: no cookies, local storage or database; old items are dropped when sources stop returning them.</p>
 <p><b>Incidents from Wikipedia.</b> Terror, bombing and hijack items are picked from Wikipedia's Current events by keyword and placed at the centre of the country named in the report. Their location is approximate and their time is the report date only.</p>
-<p><b>Top global news</b> shows the newest items as news organisations publish them, plus Wikipedia's editor-curated Current events (sports and arts hidden). Regions are guessed from country names in the headline, so some items show as Global. Posts are headlines from the outlets' own accounts and are not independently verified here.</p>
+<p><b>Top global news</b> shows the newest items as they are published: news-organisation accounts on Bluesky (Reuters, AP, Al Jazeera, NYT, CNN, DW, India Today, WION, NDTV), links to WION and India Today shared on Reddit, posts in Reddit's r/worldnews, r/news and r/india, the Mastodon #breakingnews tag, The Guardian's open API, and Wikipedia's Current events. Reddit and Mastodon posts are public user posts and are not verified; they are labelled as such. X (Twitter) is not included because its data needs a paid, secret API key that cannot be kept safe inside a web page. Regions are guessed from country names in the headline, so some items show as Global.</p>
 <p><b>Time.</b> Source timestamps are kept as published and shown in the zone labelled next to them (toggle UTC / Local in the top bar).</p>
 <p><b>Nothing is saved.</b> No cookies, local storage or server are used; all data lives in memory and disappears when you close the page.</p>
 <p><b>Limits.</b> This is a monitoring interface, not an authority. Media-derived markers can be wrong, duplicated or mis-located. Country shapes use Natural Earth boundaries (India perspective), simplified for speed. Danger zones on the map are a visual aid only. Statistics below follow your current filters and search.</p></div>`;
@@ -1054,8 +1077,8 @@ function renderMore(L){
  card('Strongest earthquakes','<div>'+big+'</div>')+
  card('Top countries by events',tbl(['Country','Events','Worst','Latest'],cr))+
  card('Reported attacks, blasts &amp; hijacks (Wikipedia, approximate location)',tbl(['Report','Country','Date (UTC)'],md))+
- card('Live update log (this session only)',tbl(['Time (UTC)','Source','Update'],S.log.slice(0,40).map(x=>`<tr><td class="mono">${new Date(x.t).toISOString().slice(11,19)}</td><td>${esc(x.src)}</td><td>${esc(x.msg)}</td></tr>`)),1)+
- card('Data source health',tbl(['Source','Status','Events','Interval','Last OK','Next','Error'],sr),1)+
+ card('Crypto movers, 24 h change (%)',(()=>{const r=NSRC.filter(x=>x.market).flatMap(x=>x.ev).filter(c=>c.ch24!=null).sort((a,b)=>b.ch24-a.ch24);return bars(r.map(c=>[(c.ch24>=0?'▲ ':'▼ ')+c.sym,+Math.abs(c.ch24).toFixed(2),c.ch24>=0?'#00d084':'#ff4d4d']))})())+
+ card('Wildfires, storms, floods &amp; volcanoes','<div>'+(L.filter(e=>['fire','volcanic','weather','flood'].includes(e.type)).sort((a,b)=>SEV[b.sev].r-SEV[a.sev].r||b.ts-a.ts).slice(0,12).map(evBtn).join('')||'<p class="lbl" style="padding:10px">None in the selected range.</p>')+'</div>')+
  card('About this data',about,1);const att=$('#more [data-k=att]');if(att)att.after(CRY)}
 function drawMap(list){
  if(!layer)return;const sig=S.zones+'|'+list.slice(0,800).map(e=>e.id+e.sev).join(',');if(sig===drawMap.sig)return;drawMap.sig=sig;layer.clearLayers();
@@ -1089,10 +1112,10 @@ function render(){
   fe.innerHTML=fl.length?fl.map(({e,nw})=>{const c=SEV[e.sev],an=nw&&!S.anim.has(e.id);if(an)S.anim.add(e.id);
    return`<button class="ev${nw?' nw':''}${an?' an':''}" style="--c:${c.c}" data-id="${esc(e.id)}"><b>${c.i} ${c.l}</b> · ${esc(e.type.toUpperCase())}<br>${esc(e.title)}<div class="mono">${fmt(e.ts)} · <span data-ago="${e.ts}">${ago(e.ts)}</span> · ${esc(e.source)} · ${esc(e.status)}</div></button>`}).join(''):'<p class="lbl" style="padding:14px">No events in this time range or filter. Widen the time range above.</p>';
   fe.scrollTop=st}
- lastAll=all;drawMap(list);renderMore(list);renderNews();renderMkt();
+ lastAll=all;drawMap(list);renderMore(list);renderNews();renderInsa();renderMkt();
  // stats
  const cnt=k=>all.filter(e=>e.sev===k).length,d24=all.filter(e=>e.ts>Date.now()-864e5).length;
- const cards=[['Active events',all.length],['Critical',cnt('critical')],['High',cnt('high')],['Moderate',cnt('moderate')],['Low',cnt('low')],['Countries affected',new Set(all.map(e=>e.country).filter(Boolean)).size],['Last 24h',d24],['Sources online',online()+' / '+SRC.length]];
+ const cards=[['Active events',all.length],['Critical',cnt('critical')],['High',cnt('high')],['Moderate',cnt('moderate')],['Low',cnt('low')],['Countries affected',new Set(all.map(e=>e.country).filter(Boolean)).size],['Last 24h',d24],['Quakes M5+ (24 h)',all.filter(e=>e.type==='earthquake'&&+(/^M([\d.]+)/.exec(e.title)||[])[1]>=5&&e.ts>Date.now()-864e5).length]];
  $('#stats').innerHTML=cards.map(c=>`<div class="card"><div class="lbl">${c[0]}</div><div class="n mono">${c[1]}</div></div>`).join('');
  // alert level
  const cr=cnt('critical'),hi=cnt('high'),lv=cr?['CRITICAL','--red']:hi>=5?['HIGH','--org']:hi?['ELEVATED','--yel']:['NORMAL','--grn'];
@@ -1101,17 +1124,17 @@ function render(){
  $('#regions').innerHTML=REGIONS.map(r=>{const x=all.filter(e=>e.region===r),l=x.sort((a,b)=>b.ts-a.ts)[0];
   return`<div class="row reg" tabindex="0" role="button" aria-pressed="${S.region===r}" data-r="${r}" style="${S.region===r?'background:#1a0808':''}"><span>${r}</span><span class="mono">${x.length} / ${x.filter(e=>e.sev==='critical').length}crit${l?' · '+ago(l.ts):''}</span></div>`}).join('');
  // sources
- $('#sources').innerHTML=[...SRC,...NSRC].map(s=>`<div class="row"><span>${s.st==='ok'?'●':s.st==='error'?'✕':'…'} ${s.name} <small>${s.kind}</small></span><span class="mono">${s.st==='ok'?'CONNECTED'+(s.via==='relay'?' (relay)':'')+' · '+s.ev.length+' ev · '+ago(s.last)+' · /'+s.every/1000+'s':s.st==='error'?'OFFLINE ('+esc(s.err)+') retry '+Math.round((s.next||0)/1000)+'s'+(s.last?' · last ok '+ago(s.last):''):'CONNECTING'}</span></div>`).join('');
+ 
  // header status
  const demo=isDemo(),on=online(),lv2=$('#live');
  lv2.className='pill '+(on&&!demo?'live':'off');
- $('#liveT').textContent=navigator.onLine===false?'NO INTERNET · RETRYING':demo?(S.demo?'DEMO':'SOURCES OFFLINE'):on<SRC.length?'LIVE (PARTIAL)':'LIVE · STREAM CONNECTED';
+ $('#liveT').textContent=navigator.onLine===false?'NO INTERNET · RETRYING':demo?(S.demo?'DEMO':'RECONNECTING'):'LIVE';
  $('#demoB').style.display=demo?'':'none';
  const lt=Math.max(0,...SRC.map(s=>s.last));$('#last').textContent=lt?new Date(lt).toISOString().slice(11,19)+' UTC':'—';
  if(S.sel)renderDetail(all.find(e=>e.id===S.sel));
  // notifications
  if(!demo)all.filter(e=>e.sev==='critical'&&!S.seen.has(e.id)).forEach(e=>{S.seen.add(e.id);if(!S.first)notify(e)});
- if(!demo&&on)S.first=false;
+ if(!demo&&SRC.every(x=>x.st!=='pending'))S.first=false;
 }
 function notify(e){if(Date.now()-S.lastNote<6e4)return;S.lastNote=Date.now();
  if(S.notify&&window.Notification&&Notification.permission==='granted')new Notification('CRITICAL EVENT DETECTED',{body:e.title+' ('+e.source+')'});
