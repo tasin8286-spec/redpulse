@@ -852,8 +852,8 @@ a.nw2:hover{background:#2a0808}.nw2 b{color:var(--c);font-size:10px;letter-spaci
 <span id="alert" class="pill" tabindex="0" title="Global alert level is an interface aggregation based on currently detected events: CRITICAL if any critical event, HIGH if 5+ high, ELEVATED if any high, else NORMAL."></span>
 <span><span class="lbl">UTC</span> <time id="utc" class="mono"></time></span>
 <span><span class="lbl">Local</span> <time id="loc" class="mono"></time></span>
-<span><span class="lbl">Last update</span> <time id="last" class="mono">—</time></span>
-<span><span class="lbl">Next refresh</span> <time id="nxt" class="mono">—</time></span>
+<span hidden><span class="lbl">Last update</span> <time id="last" class="mono">—</time></span>
+<span hidden><span class="lbl">Next refresh</span> <time id="nxt" class="mono">—</time></span>
 <span style="flex:1"></span>
 <input id="q" type="search" placeholder="Search country, event, source, ID" aria-label="Search events">
 <button id="tz" aria-pressed="false" title="Toggle timestamp display">UTC</button>
@@ -864,17 +864,17 @@ a.nw2:hover{background:#2a0808}.nw2 b{color:var(--c);font-size:10px;letter-spaci
 <div class="tick" style="flex:1 1 100%"><span class="lbl" style="color:var(--red);font-weight:700">● Live updates</span><div class="tk" aria-hidden="true"><div id="tkin"></div></div></div>
 </header>
 <main>
-<section id="feedS" aria-label="Live events"><h2><span>Live events <span id="cnt"></span></span><span id="fu" class="lbl mono" title="Next automatic refresh"></span></h2>
+<section id="feedS" aria-label="Live events"><h2><span>Live events <span id="cnt"></span></span></h2>
 <div class="tools" id="types" role="group" aria-label="Type filter"></div>
 <div class="tools"><select id="sev" aria-label="Minimum severity"><option value="">All severities</option><option value="critical">Critical</option><option value="high">High+</option><option value="moderate">Moderate+</option></select>
 <select id="rng" aria-label="Time range"><option value="3600000">Last 1 h</option><option value="21600000">Last 6 h</option><option value="86400000" selected>Last 24 h</option><option value="0">All active</option></select>
 <select id="sort" aria-label="Sort"><option value="time">Latest</option><option value="sev">Severity</option><option value="region">Region</option><option value="type">Type</option></select></div>
 <div class="scroll" id="feed" aria-live="polite"></div></section>
 <section id="mapS"><h2>World map <span><button id="zi" title="Center on India">India</button> <button id="zw" title="Whole world">World</button> <button id="zn" aria-pressed="true" title="Toggle danger zones: translucent areas sized by severity (critical ~400 km, high ~250 km, moderate ~120 km radius). Visual aid only, not an official hazard boundary.">Danger zones</button></span></h2><div id="map" role="application" aria-label="World map"></div></section>
-<section id="side"><h2><span>Top global news <span id="nwc" class="lbl"></span></span><span id="nu" class="lbl mono" title="Next automatic refresh"></span></h2><div class="tools" id="nrg" role="group" aria-label="News region"></div><div class="scroll" id="news" aria-live="polite"></div><h2>Event details</h2><div id="detail" class="scroll"></div></section>
+<section id="side"><h2><span>Top global news <span id="nwc" class="lbl"></span></span></h2><div class="tools" id="nrg" role="group" aria-label="News region"></div><div class="scroll" id="news" aria-live="polite"></div><h2>Event details</h2><div id="detail" class="scroll"></div></section>
 <section id="stats" aria-label="Statistics"></section>
 </main>
-<div class="more" style="padding-bottom:8px"><section class="mc cr"><h2><span>Crypto market · live</span><span id="mu" class="lbl mono"></span></h2><div id="mkt" class="mb"></div></section><section class="mc"><h2>Regional monitor</h2><div id="regions"></div></section><section class="mc"><h2><span>India &amp; South Asia headlines</span></h2><div id="insa" class="mb"></div></section></div>
+<div class="more" style="padding-bottom:8px"><section class="mc cr"><h2><span>Crypto market · live</span></h2><div id="mkt" class="mb"></div></section><section class="mc"><h2>Regional monitor</h2><div id="regions"></div></section><section class="mc"><h2><span>India &amp; South Asia headlines</span></h2><div id="insa" class="mb"></div></section></div>
 <div id="more" class="more"></div>
 <script>/* @preserve
  * Leaflet 1.9.4, a JS library for interactive maps. https://leafletjs.com
@@ -1179,11 +1179,7 @@ tog('#tz','utc',v=>v?'UTC':'Local');$('#tz').setAttribute('aria-pressed','true')
 tog('#snd','sound',v=>'Sound: '+(v?'on':'off'));
 tog('#dm','demo');tog('#rl','relay',v=>'Relay: '+(v?'on':'off'));tog('#zn','zones');
 tog('#ntf','notify',v=>'Notify: '+(v?'on':'off'),()=>{if(S.notify&&window.Notification&&Notification.permission==='default')Notification.requestPermission();if(!window.Notification)S.notify=false});
-const cd=a=>{const ok=a.filter(x=>x.st==='ok');if(!ok.length)return'';const t=Math.min(...ok.map(x=>x.at||Infinity)),l=Math.max(...ok.map(x=>x.last||0));return'↻ '+(isFinite(t)?Math.max(0,Math.round((t-Date.now())/1000)):'–')+'s · updated '+Math.max(0,Math.round((Date.now()-l)/1000))+'s ago'};
-const T1=setInterval(()=>{if(document.hidden)return;const n=new Date(),A=[...SRC,...NSRC].filter(x=>x.st==='ok');
- $('#utc').textContent=n.toISOString().slice(11,19);$('#loc').textContent=n.toLocaleTimeString([], {hour12:false});
- $('#fu').textContent=cd(SRC);$('#nu').textContent=cd(NSRC.filter(x=>!x.market));$('#mu').textContent=cd(NSRC.filter(x=>x.market));
- if(A.length){const t=Math.min(...A.map(x=>x.at||Infinity)),l=Math.max(...A.map(x=>x.last||0));$('#nxt').textContent=isFinite(t)?Math.max(0,Math.round((t-Date.now())/1000))+'s':'—';$('#last').textContent=new Date(l).toISOString().slice(11,19)+' UTC'}},1000);
+const T1=setInterval(()=>{if(document.hidden)return;const n=new Date();$('#utc').textContent=n.toISOString().slice(11,19);$('#loc').textContent=n.toLocaleTimeString([], {hour12:false})},1000);
 const T2=setInterval(render,30e3),T3=setInterval(()=>document.hidden||document.querySelectorAll('[data-ago]').forEach(x=>{x.textContent=ago(+x.dataset.ago)}),5e3);
 addEventListener('online',()=>[...SRC,...NSRC].forEach(x=>{clearTimeout(x.t);setTimeout(()=>poll(x),x.delay||0)}));addEventListener('offline',render);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(dirty){dirty=0;render()}[...SRC,...NSRC].forEach(x=>{clearTimeout(x.t);setTimeout(()=>poll(x),x.delay||0)})}});
