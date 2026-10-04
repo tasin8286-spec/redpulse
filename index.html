@@ -830,7 +830,6 @@ a.nw2:hover{background:#2a0808}.nw2 b{color:var(--c);font-size:10px;letter-spaci
 .mc[data-k=att] .mb,.mc.cr .mb{height:320px;max-height:320px}
 #more{padding-bottom:28px}
 @media(max-width:900px){#stats{grid-template-columns:repeat(2,1fr)}#stats .card{border-bottom:1px solid var(--b)!important}}
-#fu,#nu,#mu{display:none!important}
 
 .maphint{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:1000;background:rgba(10,3,4,.92);border:1px solid var(--red);padding:8px 14px;font-size:13px;opacity:0;transition:opacity .25s;pointer-events:none;text-align:center;max-width:80%}
 #map.leaflet-container{touch-action:pan-y pinch-zoom}
@@ -853,8 +852,8 @@ a.nw2:hover{background:#2a0808}.nw2 b{color:var(--c);font-size:10px;letter-spaci
 <span id="alert" class="pill" tabindex="0" title="Global alert level is an interface aggregation based on currently detected events: CRITICAL if any critical event, HIGH if 5+ high, ELEVATED if any high, else NORMAL."></span>
 <span><span class="lbl">UTC</span> <time id="utc" class="mono"></time></span>
 <span><span class="lbl">Local</span> <time id="loc" class="mono"></time></span>
-<span hidden><span class="lbl">Last update</span> <time id="last" class="mono">—</time></span>
-<span hidden><span class="lbl">Next refresh</span> <time id="nxt" class="mono">—</time></span>
+<span><span class="lbl">Last update</span> <time id="last" class="mono">—</time></span>
+<span><span class="lbl">Next refresh</span> <time id="nxt" class="mono">—</time></span>
 <span style="flex:1"></span>
 <input id="q" type="search" placeholder="Search country, event, source, ID" aria-label="Search events">
 <button id="tz" aria-pressed="false" title="Toggle timestamp display">UTC</button>
@@ -1180,7 +1179,11 @@ tog('#tz','utc',v=>v?'UTC':'Local');$('#tz').setAttribute('aria-pressed','true')
 tog('#snd','sound',v=>'Sound: '+(v?'on':'off'));
 tog('#dm','demo');tog('#rl','relay',v=>'Relay: '+(v?'on':'off'));tog('#zn','zones');
 tog('#ntf','notify',v=>'Notify: '+(v?'on':'off'),()=>{if(S.notify&&window.Notification&&Notification.permission==='default')Notification.requestPermission();if(!window.Notification)S.notify=false});
-const T1=setInterval(()=>{if(document.hidden)return;const n=new Date();$('#utc').textContent=n.toISOString().slice(11,19);$('#loc').textContent=n.toLocaleTimeString([], {hour12:false})},1000);
+const cd=a=>{const ok=a.filter(x=>x.st==='ok');if(!ok.length)return'';const t=Math.min(...ok.map(x=>x.at||Infinity)),l=Math.max(...ok.map(x=>x.last||0));return'↻ '+(isFinite(t)?Math.max(0,Math.round((t-Date.now())/1000)):'–')+'s · updated '+Math.max(0,Math.round((Date.now()-l)/1000))+'s ago'};
+const T1=setInterval(()=>{if(document.hidden)return;const n=new Date(),A=[...SRC,...NSRC].filter(x=>x.st==='ok');
+ $('#utc').textContent=n.toISOString().slice(11,19);$('#loc').textContent=n.toLocaleTimeString([], {hour12:false});
+ $('#fu').textContent=cd(SRC);$('#nu').textContent=cd(NSRC.filter(x=>!x.market));$('#mu').textContent=cd(NSRC.filter(x=>x.market));
+ if(A.length){const t=Math.min(...A.map(x=>x.at||Infinity)),l=Math.max(...A.map(x=>x.last||0));$('#nxt').textContent=isFinite(t)?Math.max(0,Math.round((t-Date.now())/1000))+'s':'—';$('#last').textContent=new Date(l).toISOString().slice(11,19)+' UTC'}},1000);
 const T2=setInterval(render,30e3),T3=setInterval(()=>document.hidden||document.querySelectorAll('[data-ago]').forEach(x=>{x.textContent=ago(+x.dataset.ago)}),5e3);
 addEventListener('online',()=>[...SRC,...NSRC].forEach(x=>{clearTimeout(x.t);setTimeout(()=>poll(x),x.delay||0)}));addEventListener('offline',render);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(dirty){dirty=0;render()}[...SRC,...NSRC].forEach(x=>{clearTimeout(x.t);setTimeout(()=>poll(x),x.delay||0)})}});
