@@ -874,6 +874,7 @@ a.nw2:hover{background:#2a0808}.nw2 b{color:var(--c);font-size:10px;letter-spaci
 <section id="side"><h2><span>Top global news <span id="nwc" class="lbl"></span></span></h2><div class="tools" id="nrg" role="group" aria-label="News region"></div><div class="scroll" id="news" aria-live="polite"></div><h2>Event details</h2><div id="detail" class="scroll"></div></section>
 <section id="stats" aria-label="Statistics"></section>
 </main>
+<div class="more" id="hlgrid" style="padding-bottom:8px"></div>
 <div class="more" style="padding-bottom:8px"><section class="mc cr"><h2><span>Crypto market · live</span></h2><div id="mkt" class="mb"></div></section><section class="mc"><h2>Regional monitor</h2><div id="regions"></div></section><section class="mc"><h2><span>India &amp; South Asia headlines</span></h2><div id="insa" class="mb"></div></section></div>
 <div id="more" class="more"></div>
 <script>/* @preserve
@@ -913,9 +914,9 @@ const pWiki=d=>j=>{const html=j&&j.parse&&j.parse.text&&j.parse.text['*'];if(!ht
   else if((tg==='P'||tg==='DL'||/^H[2-6]$/.test(tg))&&!c.querySelector('li')&&c.textContent.trim().length<70){cat=c.textContent.trim()||cat}
   else if(tg==='DIV')walk(c)}};
  walk(root);return out};
-const pBsky=name=>j=>(j.feed||[]).filter(f=>!f.reason&&f.post&&f.post.record).map(f=>{const p=f.post,r=p.record,ex=p.embed&&p.embed.external,rk=String(p.uri).split('/').pop(),link=ex&&/^https:\/\//.test(ex.uri)?ex.uri:'https://bsky.app/profile/'+p.author.handle+'/post/'+rk,t=(ex&&ex.title&&ex.title.length>15?ex.title:r.text||'').replace(/\s+/g,' ').trim();
- return{id:'bs:'+p.uri,kind:'SOCIAL',cat:'News post',title:t.slice(0,240),src:name,lab:'NEWS ORG POST · BLUESKY',url:link,ts:Date.parse(r.createdAt)||Date.now(),day:0}}).filter(n=>n.title.length>10);
-const bsky=h=>'https://public.api.bsky.app/xrpc/app.bsky.feed.getAuthorFeed?actor='+h+'&limit=15&filter=posts_no_replies';
+const pBsky=(name,hc)=>j=>(j.feed||[]).filter(f=>!f.reason&&f.post&&f.post.record).map(f=>{const p=f.post,r=p.record,ex=p.embed&&p.embed.external,rk=String(p.uri).split('/').pop(),link=ex&&/^https:\/\//.test(ex.uri)?ex.uri:'https://bsky.app/profile/'+p.author.handle+'/post/'+rk,t=(ex&&ex.title&&ex.title.length>15?ex.title:r.text||'').replace(/\s+/g,' ').trim();
+ return{id:'bs:'+p.uri,kind:'SOCIAL',cat:'News post',title:t.slice(0,240),src:name,hlcat:hc,lab:'NEWS ORG POST · BLUESKY',url:link,ts:Date.parse(r.createdAt)||Date.now(),day:0}}).filter(n=>n.title.length>10);
+const bsky=(h,n=15)=>'https://public.api.bsky.app/xrpc/app.bsky.feed.getAuthorFeed?actor='+h+'&limit='+n+'&filter=posts_no_replies';
 const pGuardian=j=>((j.response||{}).results||[]).map(a=>({id:'gu:'+a.id,kind:'RSS',cat:a.sectionName||'World',title:String(a.webTitle).slice(0,240),src:'The Guardian',url:a.webUrl,ts:Date.parse(a.webPublicationDate)||Date.now(),day:0}));
 const PX=new Map();
 const pMkt=j=>(Array.isArray(j)?j:[]).slice(0,12).map(c=>{const sym=String(c.symbol||'').toUpperCase(),old=PX.get(sym);PX.set(sym,c.current_price);
@@ -929,9 +930,42 @@ const pReddit=name=>j=>(((j||{}).data||{}).children||[]).map(c=>c.data).filter(d
 const pMasto=j=>(Array.isArray(j)?j:[]).filter(t=>!t.sensitive&&!t.reblog&&t.content).map(t=>{const tx=(new DOMParser().parseFromString(t.content,'text/html').body.textContent||'').replace(/\s+/g,' ').trim();
  return{id:'ms:'+t.id,kind:'SOCIAL',lab:'MASTODON POST · UNVERIFIED',cat:'Mastodon',title:tx.slice(0,240),src:'Mastodon #breakingnews',url:/^https:\/\//.test(t.url||'')?t.url:'',ts:Date.parse(t.created_at)||Date.now(),day:0}}).filter(n=>n.title.length>30);
 const rdu=path=>'https://www.reddit.com/'+path+'/new.json?limit=25&raw_json=1';
+const pHN=j=>(j.hits||[]).filter(h=>h.title).map(h=>({id:'hn:'+h.objectID,kind:'HL',hlcat:'tech',cat:'Hacker News',title:String(h.title).slice(0,200),src:'Hacker News',url:h.url&&/^https:\/\//.test(h.url)?h.url:'https://news.ycombinator.com/item?id='+h.objectID,ts:(h.created_at_i||Date.now()/1e3)*1e3,pts:h.points||0,day:0}));
+const pPMC=j=>((j.resultList||{}).result||[]).filter(r=>r.title).map(r=>({id:'pmc:'+r.source+r.id,kind:'HL',hlcat:'medical',cat:'Europe PMC',title:String(r.title).replace(/<[^>]+>/g,'').slice(0,220),src:'Europe PMC'+(r.journalTitle?' · '+r.journalTitle:''),url:'https://europepmc.org/article/'+r.source+'/'+r.id,ts:Date.parse(r.firstPublicationDate)||Date.now(),day:0}));
+const pWHO=j=>(j.value||[]).filter(v=>v.Title).map(v=>({id:'who:'+(v.UrlName||v.Title),kind:'HL',hlcat:'outbreak',cat:'WHO',title:String(v.Title).slice(0,200),src:'WHO Disease Outbreak News',url:'https://www.who.int/emergencies/disease-outbreak-news'+(v.ItemDefaultUrl||''),ts:Date.parse(v.PublicationDateAndTime)||Date.now(),day:0}));
+const pmcUrl=()=>{const f=d=>new Date(Date.now()-d*864e5).toISOString().slice(0,10);return'https://www.ebi.ac.uk/europepmc/webservices/rest/search?query='+encodeURIComponent('("first-in-human" OR "novel therapy" OR "FDA approval" OR "breakthrough") AND SRC:MED AND FIRST_PDATE:['+f(45)+' TO '+f(0)+']')+'&sort='+encodeURIComponent('P_PDATE_D desc')+'&format=json&pageSize=40&resultType=lite'};
 const NSRC=[
- {id:'b-reuters',name:'Reuters',kind:'Live news posts',url:bsky('reuters.com'),every:15e3,delay:300,parse:pBsky('Reuters')},
- {id:'b-ap',name:'AP News',kind:'Live news posts',url:bsky('apnews.com'),every:15e3,delay:900,parse:pBsky('AP News')},
+ {id:'h-pbs',name:'PBS NewsHour',kind:'Headlines',hl:1,url:bsky('pbsnews.org',50),every:150e3,delay:400,parse:pBsky('PBS NewsHour')},
+ {id:'h-nature',name:'Nature',kind:'Headlines',hl:1,url:bsky('nature.com',50),every:150e3,delay:800,parse:pBsky('Nature','science')},
+ {id:'h-science',name:'Science',kind:'Headlines',hl:1,url:bsky('science.org',50),every:150e3,delay:1200,parse:pBsky('Science','science')},
+ {id:'h-stat',name:'STAT News',kind:'Headlines',hl:1,url:bsky('statnews.com',50),every:150e3,delay:1600,parse:pBsky('STAT News','medical')},
+ {id:'h-who',name:'WHO',kind:'Headlines',hl:1,url:bsky('who.int',50),every:150e3,delay:2000,parse:pBsky('WHO','outbreak')},
+ {id:'h-ars',name:'Ars Technica',kind:'Headlines',hl:1,url:bsky('arstechnica.com',50),every:150e3,delay:2400,parse:pBsky('Ars Technica','tech')},
+ {id:'h-variety',name:'Variety',kind:'Headlines',hl:1,url:bsky('variety.com',50),every:150e3,delay:2800,parse:pBsky('Variety','hollywood')},
+ {id:'h-bh',name:'Bollywood Hungama',kind:'Headlines',hl:1,url:bsky('bollywoodhungama.com',50),every:150e3,delay:3200,parse:pBsky('Bollywood Hungama','bollywood')},
+ {id:'h-hn',name:'Hacker News',kind:'Headlines',hl:1,url:'https://hn.algolia.com/api/v1/search?tags=front_page&hitsPerPage=50',every:150e3,delay:3600,parse:pHN},
+ {id:'h-pmc',name:'Europe PMC',kind:'Medical research',hl:1,urlf:pmcUrl,every:150e3,delay:4000,parse:pPMC},
+ {id:'h-whodon',name:'WHO Disease Outbreak News',kind:'Headlines',hl:1,url:'https://www.who.int/api/news/diseaseoutbreaknews?sf_culture=en&$top=10&$orderby=PublicationDateAndTime%20desc',every:150e3,delay:4400,parse:pWHO},
+ {id:'h-nasa',name:'NASA',kind:'Headlines',hl:1,url:bsky('nasa.gov',50),every:150e3,delay:4800,parse:pBsky('NASA','science')},
+ {id:'h-newsci',name:'New Scientist',kind:'Headlines',hl:1,url:bsky('newscientist.com',50),every:150e3,delay:5150,parse:pBsky('New Scientist','science')},
+ {id:'h-sciam',name:'Scientific American',kind:'Headlines',hl:1,url:bsky('scientificamerican.com',50),every:150e3,delay:5500,parse:pBsky('Scientific American','science')},
+ {id:'h-scinews',name:'Science News',kind:'Headlines',hl:1,url:bsky('sciencenews.org',50),every:150e3,delay:5850,parse:pBsky('Science News','science')},
+ {id:'h-cdc',name:'CDC',kind:'Headlines',hl:1,url:bsky('cdc.gov',50),every:150e3,delay:6200,parse:pBsky('CDC','outbreak')},
+ {id:'h-nih',name:'NIH',kind:'Headlines',hl:1,url:bsky('nih.gov',50),every:150e3,delay:6550,parse:pBsky('NIH','medical')},
+ {id:'h-wired',name:'Wired',kind:'Headlines',hl:1,url:bsky('wired.com',50),every:150e3,delay:6900,parse:pBsky('Wired','tech')},
+ {id:'h-tc',name:'TechCrunch',kind:'Headlines',hl:1,url:bsky('techcrunch.com',50),every:150e3,delay:7250,parse:pBsky('TechCrunch','tech')},
+ {id:'h-espn',name:'ESPN',kind:'Headlines',hl:1,url:bsky('espn.com',50),every:150e3,delay:7600,parse:pBsky('ESPN','sports')},
+ {id:'h-cric',name:'ESPNcricinfo',kind:'Headlines',hl:1,url:bsky('espncricinfo.com',50),every:150e3,delay:7950,parse:pBsky('ESPNcricinfo','sports')},
+ {id:'h-sky',name:'Sky Sports',kind:'Headlines',hl:1,url:bsky('skysports.com',50),every:150e3,delay:8300,parse:pBsky('Sky Sports','sports')},
+ {id:'h-thr',name:'The Hollywood Reporter',kind:'Headlines',hl:1,url:bsky('hollywoodreporter.com',50),every:150e3,delay:8650,parse:pBsky('The Hollywood Reporter','hollywood')},
+ {id:'h-dead',name:'Deadline',kind:'Headlines',hl:1,url:bsky('deadline.com',50),every:150e3,delay:9000,parse:pBsky('Deadline','hollywood')},
+ {id:'h-ff',name:'Filmfare',kind:'Headlines',hl:1,url:bsky('filmfare.com',50),every:150e3,delay:9350,parse:pBsky('Filmfare','bollywood')},
+ {id:'h-pink',name:'Pinkvilla',kind:'Headlines',hl:1,url:bsky('pinkvilla.com',50),every:150e3,delay:9700,parse:pBsky('Pinkvilla','bollywood')},
+ {id:'h-fp',name:'Foreign Policy',kind:'Headlines',hl:1,url:bsky('foreignpolicy.com',50),every:150e3,delay:10050,parse:pBsky('Foreign Policy','geo')},
+ {id:'h-f24',name:'France 24',kind:'Headlines',hl:1,url:bsky('france24.com',50),every:150e3,delay:10400,parse:pBsky('France 24','geo')},
+ {id:'h-hindu',name:'The Hindu',kind:'Headlines',hl:1,url:bsky('thehindu.com',50),every:150e3,delay:10750,parse:pBsky('The Hindu','geo')},
+ {id:'b-reuters',name:'Reuters',kind:'Live news posts',url:bsky('reuters.com',40),every:15e3,delay:300,parse:pBsky('Reuters')},
+ {id:'b-ap',name:'AP News',kind:'Live news posts',url:bsky('apnews.com',40),every:15e3,delay:900,parse:pBsky('AP News')},
  {id:'b-aj',name:'Al Jazeera',kind:'Live news posts',url:bsky('aljazeera.com'),every:15e3,delay:1500,parse:pBsky('Al Jazeera')},
  {id:'b-nyt',name:'New York Times',kind:'Live news posts',url:bsky('nytimes.com'),every:15e3,delay:2100,parse:pBsky('New York Times')},
  {id:'b-cnn',name:'CNN',kind:'Live news posts',url:bsky('cnn.com'),every:15e3,delay:2700,parse:pBsky('CNN')},
@@ -1013,11 +1047,36 @@ function renderMkt(){const el=$('#mkt');if(!el)return;const rows=NSRC.filter(s=>
  el.innerHTML=rows.length?tbl(['#','Coin','Price (USD)','1 h','24 h','Market cap','24 h volume'],rows.map((c,i)=>`<tr class="${c.dir>0?'rup':c.dir<0?'rdn':''}"><td class="mono">${i+1}</td><td><b>${esc(c.sym)}</b> <small>${esc(c.name)}</small></td><td class="mono">${fp(c.price)}</td><td>${pc(c.ch1)}</td><td>${pc(c.ch24)}</td><td class="mono">${c.cap?'$'+nf.format(c.cap):'—'}</td><td class="mono">${c.vol?'$'+nf.format(c.vol):'—'}</td></tr>`))
   :'<p class="lbl" style="padding:14px">'+(NSRC.filter(s=>s.market).every(s=>s.st!=='ok')?'Connecting to market data…':'Loading…')+'</p>'}
 function renderInsa(){const el=$('#insa');if(!el)return;const re=/\b(India|Indian|Delhi|Mumbai|Modi|Kashmir|Pakistan|Bangladesh|Nepal|Sri Lanka|Bhutan|Maldives|Afghanistan|Dhaka|Islamabad|Kolkata|Chennai|Bengaluru)\b/,seen=new Set();
- const a=NSRC.filter(x=>!x.market).flatMap(x=>x.ev).filter(n=>re.test(n.title)).filter(n=>{const k=n.title.toLowerCase().slice(0,60);if(seen.has(k))return false;seen.add(k);return true}).sort((x,y)=>y.ts-x.ts).slice(0,25),sig=a.map(n=>n.id).join('|')||'e';
+ const a=NSRC.filter(x=>!x.market&&!x.hl).flatMap(x=>x.ev).filter(n=>re.test(n.title)).filter(n=>{const k=n.title.toLowerCase().slice(0,60);if(seen.has(k))return false;seen.add(k);return true}).sort((x,y)=>y.ts-x.ts).slice(0,25),sig=a.map(n=>n.id).join('|')||'e';
  if(el._sig===sig)return;el._sig=sig;
  el.innerHTML=a.length?a.map(n=>{const i=`<span class="tt">${esc(n.title)}</span><div class="mono">${n.kind==='WIKI'?'':fmt(n.ts)+' · '}${esc(n.src)}</div>`;return n.url?`<a class="nw2" style="--c:#ff3b3b" href="${esc(n.url)}" target="_blank" rel="noopener noreferrer">${i}</a>`:`<div class="nw2" style="--c:#ff3b3b">${i}</div>`}).join(''):'<p class="lbl" style="padding:14px">No India or South Asia headlines right now.</p>'}
+const HLN={geo:['Geopolitics','#ff1e1e'],outbreak:['Major outbreaks','#ff4d2e'],science:['Science','#ff8a50'],tech:['Technology','#e0607e'],sports:['Sports','#c0455a'],medical:['Medical innovations','#d4727f'],hollywood:['Hollywood','#a07880'],bollywood:['Bollywood','#b58a8f']};
+const KW2=[['outbreak',/outbreak|epidemic|pandemic|cholera|ebola|measles|mpox|dengue|marburg|bird flu|avian influenza|h5n1|covid|malaria|polio|nipah|quarantine|public health emergency/i],
+ ['bollywood',/bollywood|shah rukh|salman khan|aamir khan|deepika|ranbir|alia bhatt|kareena|katrina kaif|hindi film|ranveer|priyanka chopra|karan johar|akshay kumar|hrithik/i],
+ ['hollywood',/hollywood|oscar|box office|\bfilm\b|movie|actor|actress|netflix|emmy|marvel|disney|premiere|trailer|celebrity|singer|album|grammy|taylor swift/i],
+ ['sports',/\bmatch\b|league|\bcup\b|tournament|olympic|cricket|football|soccer|\bnba\b|\bnfl\b|fifa|tennis|grand prix|\bipl\b|world series|coach|champion|wimbledon/i],
+ ['medical',/cancer|clinical trial|vaccine|therapy|\bdrug\b|\bfda\b|surgery|gene therapy|diabetes|alzheimer|stem cell|treatment|first-in-human/i],
+ ['science',/\bnasa\b|\bspace\b|planet|telescope|asteroid|climate|physics|species|fossil|scientists|quantum|\bmars\b|\bmoon\b|rocket|astronom|biolog|researchers/i],
+ ['tech',/\bai\b|artificial intelligence|\bchip\b|software|apple|google|microsoft|openai|robot|cyber|startup|smartphone|semiconductor|nvidia|tesla|data breach|blockchain|\bapp\b/i],
+ ['geo',/\bwar\b|ceasefire|sanction|president|prime minister|election|parliament|treaty|\bnato\b|troops|missile|border|diplomat|summit|tariff|talks|minister|government|protest|coup|gaza|ukraine|russia|china|taiwan|iran|israel|pakistan|india/i]];
+function hlCat(n){if(n.hlcat)return n.hlcat;const t=n.title,k=KW2.find(x=>x[1].test(t));if(k)return k[0];
+ if(n.kind==='WIKI'){const c=n.cat||'';return/sport/i.test(c)?'sports':/arts|culture/i.test(c)?'hollywood':/science|tech/i.test(c)?'science':/health/i.test(c)?'medical':/conflict|politic|relation|law/i.test(c)?'geo':null}return null}
+const wd=t=>new Set(String(t).toLowerCase().replace(/[^a-z0-9 ]/g,' ').split(/\s+/).filter(w=>w.length>3));
+const ov=(a,b)=>{let i=0;a.forEach(w=>{if(b.has(w))i++});return i};
+function renderHL(){const el=$('#hlgrid');if(!el||document.hidden)return;const now=Date.now(),pool=[];
+ NSRC.forEach(s=>{if(s.market||!(s.hl||s.id==='b-reuters'||s.id==='b-ap'||s.id==='b-dw'||s.id==='wiki0'))return;s.ev.forEach(n=>{const c=hlCat(n),age=(now-n.ts)/36e5;if(!c||age>72)return;pool.push({n,c,w:s.hl?1.1:1,ws:wd(n.title)})})});
+ pool.forEach(p=>{let m=0;pool.forEach(q=>{if(q!==p&&q.n.src!==p.n.src&&ov(p.ws,q.ws)>=4&&ov(p.ws,q.ws)/Math.min(p.ws.size,q.ws.size)>=.5)m++});p.s=Math.exp(-Math.max(0,(now-p.n.ts)/36e5)/18)*p.w+Math.min(m,3)*.3+(p.n.pts?Math.log10(p.n.pts+1)/3:0)});
+ const dup=(p,k)=>k.some(q=>ov(p.ws,q.ws)>=4&&ov(p.ws,q.ws)/Math.min(p.ws.size,q.ws.size)>=.6),
+  row=(p,tag)=>{const n=p.n,col=HLN[p.c][1],ent=p.c==='hollywood'||p.c==='bollywood',i=`${tag?`<b style="color:${col};font-size:10px;letter-spacing:.08em">${HLN[p.c][0].toUpperCase()}</b>`:''}<span class="tt">${esc(n.title)}</span><div class="mono">${esc(n.src)} · <span data-ago="${n.ts}">${ago(n.ts)}</span>${ent?' · not fact-checked':''}</div>`;
+   return n.url?`<a class="nw2" style="--c:${col}" href="${esc(n.url)}" target="_blank" rel="noopener noreferrer">${i}</a>`:`<div class="nw2" style="--c:${col}">${i}</div>`},
+  empty='<p class="lbl" style="padding:14px">Gathering the best headlines…</p>',sorted=pool.slice().sort((a,b)=>b.s-a.s),all=[];
+ sorted.forEach(p=>{if(all.length<80&&!dup(p,all))all.push(p)});
+ const note='<section class="mc wide"><h2><span>Top headlines · best of the last 3 days, refreshed every 2½ minutes</span></h2><div class="ab" style="padding:8px 14px">Ranked by freshness and by how many independent outlets report the same story. Sources: Reuters, AP, PBS NewsHour, DW, Nature, Science, NASA, New Scientist, STAT News, WHO, CDC, NIH, Ars Technica, Wired, TechCrunch, ESPN, Variety, The Hollywood Reporter, Deadline, Bollywood Hungama, Filmfare, The Hindu and more, plus Hacker News, Europe PMC and Wikipedia Current events. No outlet is perfectly neutral, so read across sources. Entertainment items are not fact-checked.</div></section>',
+  allBox=`<section class="mc wide"><h2><span>All headlines</span><span class="lbl">${all.length}</span></h2><div class="mb" style="height:360px;max-height:360px">${all.length?all.map(p=>row(p,1)).join(''):empty}</div></section>`;
+ el.innerHTML=note+allBox+Object.keys(HLN).map(k=>{const kept=[];sorted.filter(p=>p.c===k).forEach(p=>{if(kept.length<40&&!dup(p,kept))kept.push(p)});
+  return`<section class="mc"><h2><span style="color:${HLN[k][1]}">${HLN[k][0]}</span><span class="lbl">${kept.length}</span></h2><div class="mb">${kept.length?kept.map(p=>row(p,0)).join(''):empty}</div></section>`}).join('')}
 function renderNews(){const q=S.q.toLowerCase(),seen=new Set(),nowT=Date.now();
- let a=NSRC.filter(s=>!s.market).flatMap(s=>s.ev).filter(n=>!/sport|arts|culture|entertain/i.test(n.cat)).map(n=>({...n,region:regOf(n.title)}))
+ let a=NSRC.filter(s=>!s.market&&!s.hl).flatMap(s=>s.ev).filter(n=>!/sport|arts|culture|entertain/i.test(n.cat)).map(n=>({...n,region:regOf(n.title)}))
   .filter(n=>{const k=n.title.toLowerCase().slice(0,60);if(seen.has(k))return false;seen.add(k);return true})
   .filter(n=>(!NEWSR||n.region===NEWSR)&&(!q||(n.title+n.cat+n.src+n.region).toLowerCase().includes(q))).sort((x,y)=>y.ts-x.ts);
  a.forEach(n=>{if(!S.nf.has(n.id))S.nf.set(n.id,S.nfirst?0:nowT)});S.nf.forEach((v,k)=>{if(!NSRC.some(x=>x.ev.some(y=>y.id===k)))S.nf.delete(k)});if(NSRC.every(x=>x.st!=='pending'))S.nfirst=0;
@@ -1180,11 +1239,11 @@ tog('#snd','sound',v=>'Sound: '+(v?'on':'off'));
 tog('#dm','demo');tog('#rl','relay',v=>'Relay: '+(v?'on':'off'));tog('#zn','zones');
 tog('#ntf','notify',v=>'Notify: '+(v?'on':'off'),()=>{if(S.notify&&window.Notification&&Notification.permission==='default')Notification.requestPermission();if(!window.Notification)S.notify=false});
 const T1=setInterval(()=>{if(document.hidden)return;const n=new Date();$('#utc').textContent=n.toISOString().slice(11,19);$('#loc').textContent=n.toLocaleTimeString([], {hour12:false})},1000);
-const T2=setInterval(render,30e3),T3=setInterval(()=>document.hidden||document.querySelectorAll('[data-ago]').forEach(x=>{x.textContent=ago(+x.dataset.ago)}),5e3);
+const T4=setInterval(renderHL,150e3),T2=setInterval(render,30e3),T3=setInterval(()=>document.hidden||document.querySelectorAll('[data-ago]').forEach(x=>{x.textContent=ago(+x.dataset.ago)}),5e3);
 addEventListener('online',()=>[...SRC,...NSRC].forEach(x=>{clearTimeout(x.t);setTimeout(()=>poll(x),x.delay||0)}));addEventListener('offline',render);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(dirty){dirty=0;render()}[...SRC,...NSRC].forEach(x=>{clearTimeout(x.t);setTimeout(()=>poll(x),x.delay||0)})}});
-addEventListener('pagehide',()=>{clearInterval(T1);clearInterval(T2);clearInterval(T3);clearTimeout(rT);RO&&RO.disconnect();[...SRC,...NSRC].forEach(x=>clearTimeout(x.t))}); // refresh relative times and source countdowns
+addEventListener('pagehide',()=>{clearInterval(T1);clearInterval(T2);clearInterval(T3);clearInterval(T4);clearTimeout(rT);RO&&RO.disconnect();[...SRC,...NSRC].forEach(x=>clearTimeout(x.t))}); // refresh relative times and source countdowns
 
 $('#more').onclick=e=>{const b=e.target.closest('[data-id]');if(b){select(b.dataset.id,true);scrollTo({top:0,behavior:'smooth'})}};
-tick();initMap();$('#zi').onclick=()=>fitIndia(true);$('#zw').onclick=()=>map&&map.flyTo([20,10],2);renderDetail();[...SRC,...NSRC].forEach(x=>setTimeout(()=>poll(x),x.delay||0));render();
+tick();setTimeout(renderHL,6000);setTimeout(renderHL,15000);initMap();$('#zi').onclick=()=>fitIndia(true);$('#zw').onclick=()=>map&&map.flyTo([20,10],2);renderDetail();[...SRC,...NSRC].forEach(x=>setTimeout(()=>poll(x),x.delay||0));render();
 </script></body></html>
