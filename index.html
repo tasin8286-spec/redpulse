@@ -855,6 +855,16 @@ a.nw2:hover{background:#2a0808}.nw2 b{color:var(--c);font-size:10px;letter-spaci
 }
 .mag{color:#ff3b3b;font-weight:700}
 #evb{display:flex;gap:6px}#evb[hidden]{display:none}#evb button{min-height:26px;padding:2px 9px;border-color:var(--red);background:#2a0607;color:#fff;font-weight:700}#evb button:hover{background:#4a0b0d}
+
+html{scroll-behavior:smooth}
+.scroll,.mb{scrollbar-width:thin;scrollbar-color:#b01212 #140405;scrollbar-gutter:stable;overscroll-behavior-y:auto}
+.scroll::-webkit-scrollbar,.mb::-webkit-scrollbar{width:10px;height:10px}
+.scroll::-webkit-scrollbar-track,.mb::-webkit-scrollbar-track{background:#140405}
+.scroll::-webkit-scrollbar-thumb,.mb::-webkit-scrollbar-thumb{background:#b01212;border:2px solid #140405;border-radius:6px}
+.scroll::-webkit-scrollbar-thumb:hover,.mb::-webkit-scrollbar-thumb:hover{background:#ff1e1e}
+#feed,#news{scroll-behavior:auto}
+.ev,.nw2{content-visibility:auto;contain-intrinsic-size:auto 66px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 </style></head><body>
 <header>
 <div class="brand"><h1>REDPULSE</h1><span class="lbl">Global threat monitor</span></div><svg class="ecg" viewBox="0 0 120 24" aria-hidden="true"><polyline points="0,12 22,12 28,12 32,3 38,21 43,12 70,12 76,12 80,5 86,19 90,12 120,12"/></svg>
@@ -1203,6 +1213,7 @@ function renderDetail(e){const el=$('#detail');
 
 function render(){
  if(document.hidden){dirty=1;return}
+ if(Date.now()-lastScrollT<180){if(!rT)rT=setTimeout(()=>{rT=0;render()},220);return}
  const all=events().map(e=>({...e,region:region(e.lat,e.lon),country:countryOf(e.lat,e.lon)||e.country}));
  const list=visible(all);
  const ids=new Set(all.map(e=>e.id)),now=Date.now();
@@ -1242,7 +1253,7 @@ function render(){
 function notify(e){if(Date.now()-S.lastNote<6e4)return;S.lastNote=Date.now();
  if(S.notify&&window.Notification&&Notification.permission==='granted')new Notification('CRITICAL EVENT DETECTED',{body:e.title+' ('+e.source+')'});
  if(S.sound)try{const a=new AudioContext(),o=a.createOscillator();o.connect(a.destination);o.frequency.value=660;o.onended=()=>a.close();o.start();o.stop(a.currentTime+.25)}catch{}}
-let DV=0,rT=0,dirty=0;const refresh=()=>{if(rT)return;rT=setTimeout(()=>{rT=0;render()},600)};
+let DV=0,rT=0,dirty=0,lastScrollT=0;const refresh=()=>{if(rT)return;rT=setTimeout(()=>{rT=0;render()},600)};
 
 // UI wiring (single set of listeners)
 const TL={all:'All types',terror:'Terror attacks',blast:'Blasts',hijack:'Hijacks',earthquake:'Earthquakes',weather:'Weather',fire:'Fires',flood:'Floods',volcanic:'Volcanoes',other:'Other'};
@@ -1264,5 +1275,6 @@ addEventListener('pagehide',()=>{clearInterval(T1);clearInterval(T2);clearInterv
 
 $('#cs').onclick=()=>{spot(null);fitIndia(true)};$('#ce').onclick=()=>{S.sel=null;spot(null);renderDetail();fitIndia(true)};
 $('#more').onclick=e=>{const b=e.target.closest('[data-id]');if(b){select(b.dataset.id,true);scrollTo({top:0,behavior:'smooth'})}};
+addEventListener('scroll',()=>{lastScrollT=Date.now()},{passive:true,capture:true});
 tick();initMap();$('#zi').onclick=()=>fitIndia(true);$('#zw').onclick=()=>map&&map.flyTo([20,10],2);renderDetail();[...SRC,...NSRC].forEach(x=>setTimeout(()=>poll(x),x.delay||0));render();
 </script></body></html>
