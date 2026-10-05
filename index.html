@@ -854,6 +854,7 @@ a.nw2:hover{background:#2a0808}.nw2 b{color:var(--c);font-size:10px;letter-spaci
  .more .mc{content-visibility:visible}
 }
 .mag{color:#ff3b3b;font-weight:700}
+#evb{display:flex;gap:6px}#evb[hidden]{display:none}#evb button{min-height:26px;padding:2px 9px;border-color:var(--red);background:#2a0607;color:#fff;font-weight:700}#evb button:hover{background:#4a0b0d}
 </style></head><body>
 <header>
 <div class="brand"><h1>REDPULSE</h1><span class="lbl">Global threat monitor</span></div><svg class="ecg" viewBox="0 0 120 24" aria-hidden="true"><polyline points="0,12 22,12 28,12 32,3 38,21 43,12 70,12 76,12 80,5 86,19 90,12 120,12"/></svg>
@@ -874,7 +875,7 @@ a.nw2:hover{background:#2a0808}.nw2 b{color:var(--c);font-size:10px;letter-spaci
 <select id="sort" aria-label="Sort"><option value="time">Latest</option><option value="sev">Severity</option><option value="region">Region</option><option value="type">Type</option></select></div>
 <div class="scroll" id="feed" aria-live="polite"></div></section>
 <section id="mapS"><h2>World map <span><button id="zi" title="Center on India">India</button> <button id="zw" title="Whole world">World</button> <button id="zn" aria-pressed="true" title="Toggle danger zones: translucent areas sized by severity (critical ~400 km, high ~250 km, moderate ~120 km radius). Visual aid only, not an official hazard boundary.">Danger zones</button></span></h2><div id="map" role="application" aria-label="World map"></div></section>
-<section id="side"><h2><span>Top global news <span id="nwc" class="lbl"></span></span></h2><div class="tools"><select id="nsr" aria-label="News region"></select><select id="nsc" aria-label="News topic"></select></div><div class="scroll" id="news" aria-live="polite"></div><h2>Event details</h2><div id="detail" class="scroll"></div></section>
+<section id="side"><h2><span>Top global news <span id="nwc" class="lbl"></span></span></h2><div class="tools"><select id="nsr" aria-label="News region"></select><select id="nsc" aria-label="News topic"></select></div><div class="scroll" id="news" aria-live="polite"></div><h2><span>Event details</span><span id="evb" hidden><button id="ce" title="Close this event and return the map to its default view">Close event</button><button id="cs" title="Remove the marker and return the map to its default view">Clear spot</button></span></h2><div id="detail" class="scroll"></div></section>
 <section id="stats" aria-label="Statistics"></section>
 </main>
 <div class="more" style="padding-bottom:8px"><section class="mc cr"><h2><span>Crypto market · live</span></h2><div id="mkt" class="mb"></div></section><section class="mc"><h2>Regional monitor</h2><div id="regions"></div></section><section class="mc"><h2><span>India &amp; South Asia headlines</span></h2><div id="insa" class="mb"></div></section></div>
@@ -917,8 +918,8 @@ const pWiki=d=>j=>{const html=j&&j.parse&&j.parse.text&&j.parse.text['*'];if(!ht
   else if((tg==='P'||tg==='DL'||/^H[2-6]$/.test(tg))&&!c.querySelector('li')&&c.textContent.trim().length<70){cat=c.textContent.trim()||cat}
   else if(tg==='DIV')walk(c)}};
  walk(root);return out};
-const pBsky=(name,hc)=>j=>(j.feed||[]).filter(f=>!f.reason&&f.post&&f.post.record).map(f=>{const p=f.post,r=p.record,ex=p.embed&&p.embed.external,rk=String(p.uri).split('/').pop(),link=ex&&/^https:\/\//.test(ex.uri)?ex.uri:'https://bsky.app/profile/'+p.author.handle+'/post/'+rk,t=(ex&&ex.title&&ex.title.length>15?ex.title:r.text||'').replace(/\s+/g,' ').trim();
- return{id:'bs:'+p.uri,kind:'SOCIAL',cat:'News post',title:t.slice(0,240),src:name,hlcat:hc,lab:'NEWS ORG POST · BLUESKY',url:link,ts:Date.parse(r.createdAt)||Date.now(),day:0}}).filter(n=>n.title.length>10);
+const pBsky=(name,hc)=>j=>(j.feed||[]).filter(f=>!f.reason&&f.post&&f.post.record).map(f=>{const p=f.post,r=p.record,ex=p.embed&&p.embed.external,ex2=ex||(p.embed&&p.embed.media&&p.embed.media.external),fa=(r.facets||[]).flatMap(q=>q.features||[]).find(q=>q.uri&&/^https:\/\//.test(q.uri)),tx=/https:\/\/[^\s)]+/.exec(r.text||''),cand=(ex2&&ex2.uri)||(fa&&fa.uri)||(tx&&tx[0])||'',link=/^https:\/\//.test(cand)&&!/\/\/(bsky\.app|bsky\.social)\b/.test(cand)?cand:'',t=(ex&&ex.title&&ex.title.length>15?ex.title:r.text||'').replace(/\s+/g,' ').trim();
+ return{id:'bs:'+p.uri,kind:'SOCIAL',cat:'News post',title:t.slice(0,240),src:name,hlcat:hc,lab:'NEWS ORG POST · BLUESKY',url:link,ts:Date.parse(r.createdAt)||Date.now(),day:0}}).filter(n=>n.title.length>10&&n.url);
 const bsky=(h,n=15)=>'https://public.api.bsky.app/xrpc/app.bsky.feed.getAuthorFeed?actor='+h+'&limit='+n+'&filter=posts_no_replies';
 const pGuardian=j=>((j.response||{}).results||[]).map(a=>({id:'gu:'+a.id,kind:'RSS',cat:a.sectionName||'World',title:String(a.webTitle).slice(0,240),src:'The Guardian',url:a.webUrl,ts:Date.parse(a.webPublicationDate)||Date.now(),day:0}));
 const PX=new Map();
@@ -929,11 +930,11 @@ const pBN=j=>{const m=new Map((Array.isArray(j)?j:[]).map(t=>[t.symbol,t]));retu
  return{id:'c:'+x[0],market:1,sym:x[0],name:x[1],price:pr,ch1:null,ch24:+t.priceChangePercent,cap:0,vol:+t.quoteVolume,dir:old==null?0:Math.sign(pr-old),ts:t.closeTime||Date.now()}})};
 const bnUrl='https://data-api.binance.vision/api/v3/ticker/24hr?symbols='+encodeURIComponent(JSON.stringify(BN.map(x=>x.split(':')[0]+'USDT')));
 const pReddit=name=>j=>(((j||{}).data||{}).children||[]).map(c=>c.data).filter(d=>d&&!d.over_18&&!d.stickied&&d.title).map(d=>{const ext=/^https:\/\//.test(d.url||'')&&!/reddit\.com|redd\.it/.test(d.url);
- return{id:'rd:'+d.id,kind:'SOCIAL',lab:'REDDIT POST · UNVERIFIED',cat:'Reddit · r/'+d.subreddit,title:String(d.title).slice(0,240),src:name,url:ext?d.url:'https://www.reddit.com'+d.permalink,ts:(d.created_utc||Date.now()/1e3)*1e3,day:0}});
-const pMasto=j=>(Array.isArray(j)?j:[]).filter(t=>!t.sensitive&&!t.reblog&&t.content).map(t=>{const tx=(new DOMParser().parseFromString(t.content,'text/html').body.textContent||'').replace(/\s+/g,' ').trim();
- return{id:'ms:'+t.id,kind:'SOCIAL',lab:'MASTODON POST · UNVERIFIED',cat:'Mastodon',title:tx.slice(0,240),src:'Mastodon #breakingnews',url:/^https:\/\//.test(t.url||'')?t.url:'',ts:Date.parse(t.created_at)||Date.now(),day:0}}).filter(n=>n.title.length>30);
+ return{id:'rd:'+d.id,kind:'SOCIAL',lab:'REDDIT POST · UNVERIFIED',cat:'Reddit · r/'+d.subreddit,title:String(d.title).slice(0,240),src:name,url:ext?d.url:'',ts:(d.created_utc||Date.now()/1e3)*1e3,day:0}}).filter(n=>n.url);
+const pMasto=j=>(Array.isArray(j)?j:[]).filter(t=>!t.sensitive&&!t.reblog&&t.content).map(t=>{const doc=new DOMParser().parseFromString(t.content,'text/html'),tx=(doc.body.textContent||'').replace(/\s+/g,' ').trim(),a=[...doc.querySelectorAll('a[href^="https://"]')].find(x=>!/mention|hashtag/.test(x.className)),c=t.card&&/^https:\/\//.test(t.card.url||'')?t.card:null,link=(c&&c.url)||(a&&a.getAttribute('href'))||'';
+ return{id:'ms:'+t.id,kind:'SOCIAL',lab:'MASTODON POST · UNVERIFIED',cat:'Mastodon',title:((c&&c.title&&c.title.length>20?c.title:tx)||'').slice(0,240),src:'Mastodon #breakingnews',url:/^https:\/\//.test(link)&&!/mastodon\.social/.test(link)?link:'',ts:Date.parse(t.created_at)||Date.now(),day:0}}).filter(n=>n.title.length>30&&n.url);
 const rdu=path=>'https://www.reddit.com/'+path+'/new.json?limit=25&raw_json=1';
-const pHN=j=>(j.hits||[]).filter(h=>h.title).map(h=>({id:'hn:'+h.objectID,kind:'HL',hlcat:'tech',cat:'Hacker News',title:String(h.title).slice(0,200),src:'Hacker News',url:h.url&&/^https:\/\//.test(h.url)?h.url:'https://news.ycombinator.com/item?id='+h.objectID,ts:(h.created_at_i||Date.now()/1e3)*1e3,pts:h.points||0,day:0}));
+const pHN=j=>(j.hits||[]).filter(h=>h.title).map(h=>({id:'hn:'+h.objectID,kind:'HL',hlcat:'tech',cat:'Hacker News',title:String(h.title).slice(0,200),src:'Hacker News',url:h.url&&/^https:\/\//.test(h.url)?h.url:'',ts:(h.created_at_i||Date.now()/1e3)*1e3,pts:h.points||0,day:0})).filter(n=>n.url);
 const pPMC=j=>((j.resultList||{}).result||[]).filter(r=>r.title).map(r=>({id:'pmc:'+r.source+r.id,kind:'HL',hlcat:'medical',cat:'Europe PMC',title:String(r.title).replace(/<[^>]+>/g,'').slice(0,220),src:'Europe PMC'+(r.journalTitle?' · '+r.journalTitle:''),url:'https://europepmc.org/article/'+r.source+'/'+r.id,ts:Date.parse(r.firstPublicationDate)||Date.now(),day:0}));
 const pWHO=j=>(j.value||[]).filter(v=>v.Title).map(v=>({id:'who:'+(v.UrlName||v.Title),kind:'HL',hlcat:'outbreak',cat:'WHO',title:String(v.Title).slice(0,200),src:'WHO Disease Outbreak News',url:'https://www.who.int/emergencies/disease-outbreak-news'+(v.ItemDefaultUrl||''),ts:Date.parse(v.PublicationDateAndTime)||Date.now(),day:0}));
 const pmcUrl=()=>{const f=d=>new Date(Date.now()-d*864e5).toISOString().slice(0,10);return'https://www.ebi.ac.uk/europepmc/webservices/rest/search?query='+encodeURIComponent('("first-in-human" OR "novel therapy" OR "FDA approval" OR "breakthrough") AND SRC:MED AND FIRST_PDATE:['+f(45)+' TO '+f(0)+']')+'&sort='+encodeURIComponent('P_PDATE_D desc')+'&format=json&pageSize=40&resultType=lite'};
@@ -1068,7 +1069,7 @@ function renderMkt(){const el=$('#mkt');if(!el)return;const rows=NSRC.filter(s=>
  el.innerHTML=rows.length?tbl(['#','Coin','Price (USD)','1 h','24 h','Market cap','24 h volume'],rows.map((c,i)=>`<tr class="${c.dir>0?'rup':c.dir<0?'rdn':''}"><td class="mono">${i+1}</td><td><b>${esc(c.sym)}</b> <small>${esc(c.name)}</small></td><td class="mono">${fp(c.price)}</td><td>${pc(c.ch1)}</td><td>${pc(c.ch24)}</td><td class="mono">${c.cap?'$'+nf.format(c.cap):'—'}</td><td class="mono">${c.vol?'$'+nf.format(c.vol):'—'}</td></tr>`))
   :'<p class="lbl" style="padding:14px">'+(NSRC.filter(s=>s.market).every(s=>s.st!=='ok')?'Connecting to market data…':'Loading…')+'</p>'}
 function renderInsa(){const el=$('#insa');if(!el)return;const re=/\b(India|Indian|Delhi|Mumbai|Modi|Kashmir|Pakistan|Bangladesh|Nepal|Sri Lanka|Bhutan|Maldives|Afghanistan|Dhaka|Islamabad|Kolkata|Chennai|Bengaluru)\b/,seen=new Set();
- const a=NSRC.filter(x=>!x.market&&!x.gm&&!x.mv).flatMap(x=>x.ev).filter(n=>re.test(n.title)).filter(n=>{const k=n.title.toLowerCase().slice(0,60);if(seen.has(k))return false;seen.add(k);return true}).sort((x,y)=>y.ts-x.ts).slice(0,isMob()?12:25),sig=a.map(n=>n.id).join('|')||'e';
+ const a=NSRC.filter(x=>!x.market&&!x.gm&&!x.mv).flatMap(x=>x.ev).filter(n=>re.test(n.title)).filter(n=>{const k=n.title.toLowerCase().slice(0,60);if(seen.has(k))return false;seen.add(k);return true}).sort((x,y)=>y.ts-x.ts).slice(0,isMob()?6:25),sig=a.map(n=>n.id).join('|')||'e';
  if(el._sig===sig)return;el._sig=sig;
  el.innerHTML=a.length?a.map(n=>{const i=`<span class="tt">${esc(n.title)}</span><div class="mono">${n.kind==='WIKI'?'':fmt(n.ts)+' · '}${esc(n.src)}</div>`;return n.url?`<a class="nw2" style="--c:#ff3b3b" href="${esc(n.url)}" target="_blank" rel="noopener noreferrer">${i}</a>`:`<div class="nw2" style="--c:#ff3b3b">${i}</div>`}).join(''):'<p class="lbl" style="padding:14px">No India or South Asia headlines right now.</p>'}
 const HLN={geo:['Geopolitics','#ff1e1e'],outbreak:['Major outbreaks','#ff4d2e'],science:['Science','#ff8a50'],tech:['Technology','#e0607e'],sports:['Sports','#c0455a'],medical:['Medical innovations','#d4727f'],hollywood:['Hollywood','#a07880'],bollywood:['Entertainment','#b58a8f']};
@@ -1090,7 +1091,7 @@ function renderNews(){const q=S.q.toLowerCase(),seen=new Set(),nowT=Date.now();
   .filter(n=>(!NEWSR||n.region===NEWSR)&&(!NEWSC||n.hc===NEWSC)&&(!q||(n.title+n.cat+n.src+n.region).toLowerCase().includes(q))).sort((x,y)=>y.ts-x.ts);
  a.forEach(n=>{if(!S.nf.has(n.id))S.nf.set(n.id,S.nfirst?0:nowT)});S.nf.forEach((v,k)=>{if(!NSRC.some(x=>x.ev.some(y=>y.id===k)))S.nf.delete(k)});if(NSRC.every(x=>x.st!=='pending'))S.nfirst=0;
  $('#nwc').textContent='('+a.length+')';
- const ne=$('#news'),nl=a.slice(0,isMob()?60:250).map(n=>({n,nwn:S.nf.get(n.id)>0&&nowT-S.nf.get(n.id)<9e4})),nsig=nl.map(x=>x.n.id+(x.nwn?1:0)).join('|')||('empty'+NSRC.every(x=>x.st!=='ok'));
+ const ne=$('#news'),nl=a.slice(0,isMob()?6:250).map(n=>({n,nwn:S.nf.get(n.id)>0&&nowT-S.nf.get(n.id)<9e4})),nsig=nl.map(x=>x.n.id+(x.nwn?1:0)).join('|')||('empty'+NSRC.every(x=>x.st!=='ok'));
  if(ne._sig!==nsig){ne._sig=nsig;const st=ne.scrollTop;
   ne.innerHTML=nl.length?nl.map(({n,nwn})=>{const an=nwn&&!S.anim.has(n.id);if(an)S.anim.add(n.id);const col=catCol(n.cat),when=n.kind==='WIKI'?new Date(n.day).toUTCString().slice(5,11):fmt(n.ts)+' · <span data-ago="'+n.ts+'">'+ago(n.ts)+'</span>',
    inner=`${nwn?'<b class="nbadge">NEW</b> ':''}<b>${esc(n.region.toUpperCase())}</b> · ${esc(n.hc?HLN[n.hc][0]:n.cat)}<span class="tt">${esc(n.title)}</span><div class="mono">${when} · ${esc(n.src)}${n.hc==='hollywood'||n.hc==='bollywood'?' · not fact-checked':''} · ${n.kind==='WIKI'?'WIKIPEDIA CURRENT EVENTS':(n.lab||'THE GUARDIAN API')}</div>`,cl='nw2'+(nwn?' nw':'')+(an?' an':'');
@@ -1136,9 +1137,9 @@ const CRY=document.querySelector('#mkt').closest('section');
 const card=(t,b,w)=>`<section class="mc${w?' wide':''}"${/Reported attacks/.test(t)?' data-k="att"':''}><h2>${t}</h2><div class="mb">${b}</div></section>`;
 const evBtn=e=>`<button class="ev" style="--c:${SEV[e.sev].c}" data-id="${esc(e.id)}"><b>${SEV[e.sev].i} ${SEV[e.sev].l}</b> · ${esc(e.type.toUpperCase())}<br>${etl(e.title)}<div class="mono">${fmt(e.ts)} · ${ago(e.ts)} · ${esc(e.source)}</div></button>`;
 const tbl=(h,rows)=>rows.length?`<div class="tw"><table class="tb"><thead><tr>${h.map(x=>'<th>'+x+'</th>').join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`:'<p class="lbl" style="padding:10px">No data.</p>';
-function gamingHTML(){const seen=new Set(),a=NSRC.filter(x=>x.gm).flatMap(x=>x.ev).filter(n=>{const k=n.title.toLowerCase().slice(0,60);if(seen.has(k))return false;seen.add(k);return true}).sort((x,y)=>y.ts-x.ts).slice(0,isMob()?20:60);
+function gamingHTML(){const seen=new Set(),a=NSRC.filter(x=>x.gm).flatMap(x=>x.ev).filter(n=>{const k=n.title.toLowerCase().slice(0,60);if(seen.has(k))return false;seen.add(k);return true}).sort((x,y)=>y.ts-x.ts).slice(0,isMob()?6:60);
  return a.length?'<div>'+a.map(n=>{const i=`<span class="tt">${esc(n.title)}</span><div class="mono">${esc(n.src)} · <span data-ago="${n.ts}">${ago(n.ts)}</span></div>`;return n.url?`<a class="nw2" style="--c:#e0607e" href="${esc(n.url)}" target="_blank" rel="noopener noreferrer">${i}</a>`:`<div class="nw2" style="--c:#e0607e">${i}</div>`}).join('')+'</div>':'<p class="lbl" style="padding:14px">Gathering gaming news…</p>'}
-function moviesHTML(){const seen=new Set(),a=NSRC.filter(x=>!x.market&&!x.gm).flatMap(x=>x.ev.filter(n=>x.mv||['hollywood','bollywood'].includes(hlCat(n)))).filter(n=>{const k=n.title.toLowerCase().slice(0,60);if(seen.has(k))return false;seen.add(k);return true}).sort((x,y)=>y.ts-x.ts).slice(0,isMob()?20:60);
+function moviesHTML(){const seen=new Set(),a=NSRC.filter(x=>!x.market&&!x.gm).flatMap(x=>x.ev.filter(n=>x.mv||['hollywood','bollywood'].includes(hlCat(n)))).filter(n=>{const k=n.title.toLowerCase().slice(0,60);if(seen.has(k))return false;seen.add(k);return true}).sort((x,y)=>y.ts-x.ts).slice(0,isMob()?6:60);
  return a.length?'<p class="lbl" style="padding:6px 10px;text-transform:none">Entertainment news from film outlets. Not fact-checked.</p><div>'+a.map(n=>{const i=`<span class="tt">${esc(n.title)}</span><div class="mono">${esc(n.src)} · ${n.kind==='WIKI'?'':'<span data-ago="'+n.ts+'">'+ago(n.ts)+'</span>'}</div>`;return n.url?`<a class="nw2" style="--c:#a07880" href="${esc(n.url)}" target="_blank" rel="noopener noreferrer">${i}</a>`:`<div class="nw2" style="--c:#a07880">${i}</div>`}).join('')+'</div>':'<p class="lbl" style="padding:14px">Gathering movie news…</p>'}
 function renderMore(L){
  const cnt=(a,f)=>{const m=new Map();a.forEach(e=>{const k=f(e);m.set(k,(m.get(k)||0)+1)});return[...m]};
@@ -1188,13 +1189,12 @@ function spot(e,fly){if(!map||!SEL)return;SEL.clearLayers();if(!e)return;const c
  if(fly){map.flyTo([e.lat,e.lon],Math.max(map.getZoom(),6),{duration:.8});const m=$('#mapS').getBoundingClientRect();if(m.top<0||m.bottom>innerHeight)$('#mapS').scrollIntoView({behavior:'smooth',block:'center'})}}
 function select(id,fly){S.sel=id;const e=lastAll.find(x=>x.id===id);renderDetail(e);spot(e,fly)}
 function renderDetail(e){const el=$('#detail');
- if(!e){el.innerHTML='<p class="lbl" style="padding:10px">Select an event on the map or in the feed.</p>';return}
+ if(!e){$('#evb').hidden=true;el.innerHTML='<p class="lbl" style="padding:10px">Select an event on the map or in the feed.</p>';return}
  const c=SEV[e.sev],r=(k,v)=>`<div class="row"><span>${k}</span><span class="mono">${esc(v)}</span></div>`;
  el.innerHTML=`<div style="padding:8px 10px;border-left:3px solid ${c.c}"><b style="color:${c.c}">${c.i} ${c.l}</b> · ${esc(e.type.toUpperCase())}<br>${etl(e.title)}</div>`+
  r('Location',e.country||'—')+r('Region',e.region)+r('Latitude',e.lat.toFixed(3)+'°')+r('Longitude',e.lon.toFixed(3)+'°')+r('Event time',fmt(e.ts))+r('Source updated',fmt(e.upd))+
  r('Source',e.source)+r('Data status',e.status)+r('ID',e.id)+`<p style="padding:4px 10px;color:var(--m)">${esc(e.desc)}</p>`+
- `<div class="tools">${/^https:\/\//.test(e.url)?`<a href="${esc(e.url)}" target="_blank" rel="noopener noreferrer"><button>Open source</button></a>`:''}<button id="vm">View on map</button><button id="cs">Clear spot</button></div>`;
- const b=$('#vm');if(b)b.onclick=()=>spot(e,true);const cb=$('#cs');if(cb)cb.onclick=()=>spot(null)}
+ `<div class="tools">${/^https:\/\//.test(e.url)?`<a href="${esc(e.url)}" target="_blank" rel="noopener noreferrer"><button>Open source</button></a>`:''}</div>`;$('#evb').hidden=false}
 
 function render(){
  if(document.hidden){dirty=1;return}
@@ -1206,7 +1206,7 @@ function render(){
  if(CC.size>1000)CC.clear();
  // feed
  const nn=SRC.reduce((a,x)=>a+(x.newN||0),0);$('#cnt').textContent='('+list.length+')'+(nn?' +'+nn+' new':'');
- const fe=$('#feed'),fl=list.slice(0,isMob()?40:120).map(e=>({e,nw:S.fs.get(e.id)>0&&now-S.fs.get(e.id)<6e4})),fsig=fl.map(x=>x.e.id+(x.nw?1:0)).join('|')||'empty';
+ const fe=$('#feed'),fl=list.slice(0,isMob()?6:120).map(e=>({e,nw:S.fs.get(e.id)>0&&now-S.fs.get(e.id)<6e4})),fsig=fl.map(x=>x.e.id+(x.nw?1:0)).join('|')||'empty';
  if(fe._sig!==fsig){fe._sig=fsig;const st=fe.scrollTop;
   fe.innerHTML=fl.length?fl.map(({e,nw})=>{const c=SEV[e.sev],an=nw&&!S.anim.has(e.id);if(an)S.anim.add(e.id);
    return`<button class="ev${nw?' nw':''}${an?' an':''}" style="--c:${c.c}" data-id="${esc(e.id)}"><b>${c.i} ${c.l}</b> · ${esc(e.type.toUpperCase())}<br>${etl(e.title)}<div class="mono">${fmt(e.ts)} · <span data-ago="${e.ts}">${ago(e.ts)}</span> · ${esc(e.source)} · ${esc(e.status)}</div></button>`}).join(''):'<p class="lbl" style="padding:14px">No events in this time range or filter. Widen the time range above.</p>';
@@ -1257,6 +1257,7 @@ addEventListener('online',()=>[...SRC,...NSRC].forEach(x=>{clearTimeout(x.t);set
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(dirty){dirty=0;render()}[...SRC,...NSRC].forEach(x=>{clearTimeout(x.t);setTimeout(()=>poll(x),x.delay||0)})}});
 addEventListener('pagehide',()=>{clearInterval(T1);clearInterval(T2);clearInterval(T3);clearTimeout(rT);RO&&RO.disconnect();[...SRC,...NSRC].forEach(x=>clearTimeout(x.t))}); // refresh relative times and source countdowns
 
+$('#cs').onclick=()=>{spot(null);fitIndia(true)};$('#ce').onclick=()=>{S.sel=null;spot(null);renderDetail();fitIndia(true)};
 $('#more').onclick=e=>{const b=e.target.closest('[data-id]');if(b){select(b.dataset.id,true);scrollTo({top:0,behavior:'smooth'})}};
 tick();initMap();$('#zi').onclick=()=>fitIndia(true);$('#zw').onclick=()=>map&&map.flyTo([20,10],2);renderDetail();[...SRC,...NSRC].forEach(x=>setTimeout(()=>poll(x),x.delay||0));render();
 </script></body></html>
