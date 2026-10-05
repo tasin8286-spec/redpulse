@@ -700,7 +700,7 @@ section>h2{margin:0;padding:6px 10px;font-size:10px;letter-spacing:.15em;text-tr
 .card{flex:1 1 110px;padding:8px 12px;border-right:1px solid var(--b)}.card .n{font-size:22px;font-weight:700;transition:color .4s}
 .banner{background:var(--yel);color:#000;font-weight:700;text-align:center;padding:3px;font-size:11px;letter-spacing:.1em}
 .reg{cursor:pointer}.reg:hover{background:#1a0808}
-@media(max-width:900px){html,body{height:auto;display:block}header{position:sticky;top:0}main{display:flex;flex-direction:column;height:auto}#stats{order:-1}#map{min-height:55vh}#map{min-height:55vh}.scroll{max-height:60vh}}
+@media (max-width:1000px),(hover:none) and (pointer:coarse){html,body{height:auto;display:block}header{position:sticky;top:0}main{display:flex;flex-direction:column;height:auto}#stats{order:-1}#map{min-height:55vh}#map{min-height:55vh}.scroll{max-height:60vh}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
 :root{--b:#6b0f0f;--red:#ff1e1e}
@@ -733,7 +733,7 @@ section>h2{gap:8px;flex-wrap:wrap}section>h2 .lbl{text-transform:none}
 .card{min-width:0;overflow-wrap:anywhere}
 .leaflet-top,.leaflet-bottom{z-index:500}.lg{max-width:220px}
 .leaflet-tooltip.cl{white-space:nowrap;pointer-events:none}
-@media(max-width:900px){.row span:last-child{text-align:left;margin-left:0}}
+@media (max-width:1000px),(hover:none) and (pointer:coarse){.row span:last-child{text-align:left;margin-left:0}}
 
 .cl{position:absolute;left:0;top:0;transform:translate(-50%,-50%);white-space:nowrap;pointer-events:none;font:700 10px system-ui;color:#fff;text-shadow:0 0 3px #000,0 0 3px #000,0 0 6px #000}
 .cl2{font-weight:500;color:#d9b3b3}
@@ -749,7 +749,7 @@ main{padding:8px 8px 16px;gap:8px}
 .card .lbl{display:block;margin-bottom:4px;white-space:normal}
 .card .n{line-height:1.15;white-space:nowrap}
 .row{padding:5px 10px;line-height:1.35;gap:4px 10px}
-@media(max-width:900px){main{padding-bottom:24px}#side{overflow:visible}#detail{max-height:none}}
+@media (max-width:1000px),(hover:none) and (pointer:coarse){main{padding-bottom:24px}#side{overflow:visible}#detail{max-height:none}}
 
 html,body{height:auto;min-height:100%;display:block;overflow-x:hidden}
 body{background:radial-gradient(ellipse at 50% 0,#2a0505 0,#0a0203 45%,#050505 100%),#050505}
@@ -780,9 +780,9 @@ main{height:max(560px,calc(100vh - 128px))}
 .nw2{display:block;border-left:3px solid var(--c);padding:7px 10px;border-bottom:1px solid #2a0a0a;color:var(--t);text-decoration:none}
 a.nw2:hover{background:#2a0808}.nw2 b{color:var(--c);font-size:10px;letter-spacing:.08em}
 .nw2 .tt{display:block;margin:2px 0;font-weight:600;overflow-wrap:anywhere;line-height:1.35}.nw2 div{color:var(--m);font-size:11px;overflow-wrap:anywhere}
-@media(max-width:900px){#side{overflow:visible}#news{flex:none;max-height:60vh}#side #detail{max-height:none}}
+@media (max-width:1000px),(hover:none) and (pointer:coarse){#side{overflow:visible}#news{flex:none;max-height:60vh}#side #detail{max-height:none}}
 
-@media(max-width:900px){
+@media (max-width:1000px),(hover:none) and (pointer:coarse){
  html,body{overflow-x:hidden}
  header{position:relative;padding:6px 8px;gap:4px 8px}
  .ecg{display:none}h1{font-size:16px;letter-spacing:.22em}
@@ -818,7 +818,7 @@ a.nw2:hover{background:#2a0808}.nw2 b{color:var(--c);font-size:10px;letter-spaci
 .mc[data-k=att] .tw,.mc.cr .tw{overflow:visible}
 .mc.cr .tb th,.mc[data-k=att] .tb th{top:0;z-index:1}
 .mc.cr .tb{min-width:520px}
-@media(max-width:900px){.mc.cr{grid-column:auto}}
+@media (max-width:1000px),(hover:none) and (pointer:coarse){.mc.cr{grid-column:auto}}
 
 /* every block is a box */
 #stats{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;background:none!important;border:0!important;box-shadow:none!important;padding:0}
@@ -829,7 +829,7 @@ a.nw2:hover{background:#2a0808}.nw2 b{color:var(--c);font-size:10px;letter-spaci
 .mc.wide .mb{height:320px}
 .mc[data-k=att] .mb,.mc.cr .mb{height:320px;max-height:320px}
 #more{padding-bottom:28px}
-@media(max-width:900px){#stats{grid-template-columns:repeat(2,1fr)}#stats .card{border-bottom:1px solid var(--b)!important}}
+@media (max-width:1000px),(hover:none) and (pointer:coarse){#stats{grid-template-columns:repeat(2,1fr)}#stats .card{border-bottom:1px solid var(--b)!important}}
 
 .maphint{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:1000;background:rgba(10,3,4,.92);border:1px solid var(--red);padding:8px 14px;font-size:13px;opacity:0;transition:opacity .25s;pointer-events:none;text-align:center;max-width:80%}
 #map.leaflet-container{touch-action:pan-y pinch-zoom}
@@ -846,11 +846,18 @@ a.nw2:hover{background:#2a0808}.nw2 b{color:var(--c);font-size:10px;letter-spaci
 @media(prefers-reduced-motion:reduce){.spot i{animation:none;opacity:.8}}
 #ncg{padding:0 6px 4px}#ncg .chip{font-size:10px;padding:2px 6px;min-height:24px}
 .tools select{flex:1 1 calc(50% - 4px);min-width:0}
+
+@media (max-width:1000px),(hover:none) and (pointer:coarse){
+ /* phones: no scroll boxes inside the page, so every swipe scrolls the page itself */
+ .scroll,.mb,#feed,#news,#detail,#insa,#regions,#side,#side #detail,.mc .mb,.mc.cr .mb,.mc[data-k=att] .mb,.mc.wide .mb,.mc>#regions{height:auto!important;max-height:none!important;min-height:0!important;overflow:visible!important}
+ .tw{overflow-x:auto;overflow-y:visible;touch-action:pan-y pinch-zoom}
+ .more .mc{content-visibility:visible}
+}
+.mag{color:#ff3b3b;font-weight:700}
 </style></head><body>
 <header>
 <div class="brand"><h1>REDPULSE</h1><span class="lbl">Global threat monitor</span></div><svg class="ecg" viewBox="0 0 120 24" aria-hidden="true"><polyline points="0,12 22,12 28,12 32,3 38,21 43,12 70,12 76,12 80,5 86,19 90,12 120,12"/></svg>
 <span id="live" class="pill"><i class="dot"></i><span id="liveT">CONNECTING</span></span>
-<span id="demoB" class="pill" style="display:none;color:#000;background:var(--yel)">DEMO MODE</span>
 <span id="alert" class="pill" tabindex="0" title="Global alert level is an interface aggregation based on currently detected events: CRITICAL if any critical event, HIGH if 5+ high, ELEVATED if any high, else NORMAL."></span>
 <span><span class="lbl">UTC</span> <time id="utc" class="mono"></time></span>
 <span><span class="lbl">Local</span> <time id="loc" class="mono"></time></span>
@@ -858,11 +865,6 @@ a.nw2:hover{background:#2a0808}.nw2 b{color:var(--c);font-size:10px;letter-spaci
 <span hidden><span class="lbl">Next refresh</span> <time id="nxt" class="mono">—</time></span>
 <span style="flex:1"></span>
 <input id="q" type="search" placeholder="Search country, event, source, ID" aria-label="Search events">
-<button id="tz" aria-pressed="false" title="Toggle timestamp display">UTC</button>
-<button id="snd" aria-pressed="false">Sound: off</button>
-<button id="ntf" aria-pressed="false">Notify: off</button>
-<button id="rl" hidden aria-hidden="true" aria-pressed="true" title="If a source blocks direct browser requests, retry through a public CORS relay (allorigins.win / corsproxy.io). The relay can see which public data URLs you request. Turn off to use direct requests only.">Relay: on</button>
-<button id="dm" aria-pressed="false" title="Force synthetic demo data">Demo</button>
 <div class="tick" style="flex:1 1 100%"><span class="lbl" style="color:var(--red);font-weight:700">● Live updates</span><div class="tk" aria-hidden="true"><div id="tkin"></div></div></div>
 </header>
 <main>
@@ -887,12 +889,13 @@ a.nw2:hover{background:#2a0808}.nw2 b{color:var(--c);font-size:10px;letter-spaci
 "use strict";
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const etl=t=>esc(t).replace(/^(M\d+(?:\.\d+)?)/,'<span class="mag">$1</span>');
 const SEV={critical:{c:'#ff0000',l:'CRITICAL',i:'▲▲',r:4},high:{c:'#ff4d2e',l:'HIGH',i:'▲',r:3},moderate:{c:'#ff8a50',l:'MODERATE',i:'■',r:2},low:{c:'#c0455a',l:'LOW',i:'●',r:1},info:{c:'#a07880',l:'INFO',i:'ℹ',r:0}};
 const TYPES=['all','terror','blast','hijack','earthquake','weather','fire','flood','volcanic','other'];
 const REGIONS=['North America','South America','Europe','Africa','Middle East','Asia','Oceania','Arctic / Antarctic'];
 const region=(la,lo)=>la>66||la<-60?'Arctic / Antarctic':lo<-30?(la>12?'North America':'South America'):lo<-25&&la>12?'North America':
  (lo>=-20&&lo<45&&la>=35)?'Europe':(lo>=-20&&lo<52&&la<35&&la>-36&&!(lo>34&&la>12))?'Africa':(lo>=34&&lo<60&&la>12&&la<38)?'Middle East':lo>110&&la<-8||lo>150||(lo>110&&la<0)?'Oceania':'Asia';
-const S={type:'all',sev:'',sort:'time',q:'',region:'',sel:null,zones:true,utc:true,sound:false,notify:false,demo:false,seen:new Set(),anim:new Set(),nf:new Map(),nfirst:1,relay:true,rng:864e5,log:[],fs:new Map(),lastNote:0,first:true};
+const S={type:'all',sev:'',sort:'time',q:'',region:'',sel:null,zones:true,utc:false,sound:false,notify:false,demo:false,seen:new Set(),anim:new Set(),nf:new Map(),nfirst:1,relay:true,rng:864e5,log:[],fs:new Map(),lastNote:0,first:true};
 const utc=x=>Date.parse(/Z|[+-]\d\d:?\d\d$/.test(x)?x:x+'Z');
 const pNWS=j=>(j.features||[]).slice(0,150).map(f=>{const p=f.properties||{},g=f.geometry;if(!g)return null;const pts=[];(function w(c){typeof c[0]==='number'?pts.push(c):c.forEach(w)})(g.coordinates);if(!pts.length)return null;
  const lo=pts.reduce((a,c)=>a+c[0],0)/pts.length,la=pts.reduce((a,c)=>a+c[1],0)/pts.length,ev=p.event||'Alert';
@@ -934,6 +937,9 @@ const pHN=j=>(j.hits||[]).filter(h=>h.title).map(h=>({id:'hn:'+h.objectID,kind:'
 const pPMC=j=>((j.resultList||{}).result||[]).filter(r=>r.title).map(r=>({id:'pmc:'+r.source+r.id,kind:'HL',hlcat:'medical',cat:'Europe PMC',title:String(r.title).replace(/<[^>]+>/g,'').slice(0,220),src:'Europe PMC'+(r.journalTitle?' · '+r.journalTitle:''),url:'https://europepmc.org/article/'+r.source+'/'+r.id,ts:Date.parse(r.firstPublicationDate)||Date.now(),day:0}));
 const pWHO=j=>(j.value||[]).filter(v=>v.Title).map(v=>({id:'who:'+(v.UrlName||v.Title),kind:'HL',hlcat:'outbreak',cat:'WHO',title:String(v.Title).slice(0,200),src:'WHO Disease Outbreak News',url:'https://www.who.int/emergencies/disease-outbreak-news'+(v.ItemDefaultUrl||''),ts:Date.parse(v.PublicationDateAndTime)||Date.now(),day:0}));
 const pmcUrl=()=>{const f=d=>new Date(Date.now()-d*864e5).toISOString().slice(0,10);return'https://www.ebi.ac.uk/europepmc/webservices/rest/search?query='+encodeURIComponent('("first-in-human" OR "novel therapy" OR "FDA approval" OR "breakthrough") AND SRC:MED AND FIRST_PDATE:['+f(45)+' TO '+f(0)+']')+'&sort='+encodeURIComponent('P_PDATE_D desc')+'&format=json&pageSize=40&resultType=lite'};
+const WEBZ_TOKEN='2b59c86e-b973-4728-b510-e1dacb3e4876'; // visible to anyone who opens the page source: rotate it, or move this call to a server
+const webzUrl=()=>'https://api.webz.io/api/news?token='+WEBZ_TOKEN+'&q='+encodeURIComponent('language:english')+'&sort=crawled&ts='+(Date.now()-6*36e5)+'&format=json&size=25&webz_reporter=true&includeSyndicated=false&allowNewsHistory=false';
+const pWebz=j=>(j.posts||[]).filter(p=>p.title&&/^https?:\/\//.test(p.url||'')).map(p=>({id:'wz:'+(p.uuid||p.url),kind:'SOCIAL',lab:'WEBZ.IO AGGREGATED NEWS · UNVERIFIED',cat:'News',title:String(p.title).slice(0,240),src:(p.thread&&p.thread.site)||'Webz.io',url:p.url,ts:Date.parse(p.published||p.crawled)||Date.now(),day:0}));
 const NSRC=[
  {id:'h-pbs',name:'PBS NewsHour',kind:'Headlines',hl:1,url:bsky('pbsnews.org',50),every:150e3,delay:400,parse:pBsky('PBS NewsHour')},
  {id:'h-nature',name:'Nature',kind:'Headlines',hl:1,url:bsky('nature.com',50),every:150e3,delay:800,parse:pBsky('Nature','science')},
@@ -974,6 +980,13 @@ const NSRC=[
  {id:'g-gi',name:'GamesIndustry.biz',kind:'Gaming news',gm:1,url:bsky('gamesindustry.biz',40),every:60e3,delay:13950,parse:pBsky('GamesIndustry.biz')},
  {id:'g-nl',name:'Nintendo Life',kind:'Gaming news',gm:1,url:bsky('nintendolife.com',40),every:60e3,delay:14300,parse:pBsky('Nintendo Life')},
  {id:'g-vg',name:'VG247',kind:'Gaming news',gm:1,url:bsky('vg247.com',40),every:60e3,delay:14650,parse:pBsky('VG247')},
+ {id:'webz',name:'Webz.io',kind:'Aggregated news',urlf:webzUrl,every:600e3,delay:6000,parse:pWebz},
+ {id:'m-indie',name:'IndieWire',kind:'Movie news',mv:1,url:bsky('indiewire.com',40),every:120e3,delay:14000,parse:pBsky('IndieWire','hollywood')},
+ {id:'m-coll',name:'Collider',kind:'Movie news',mv:1,url:bsky('collider.com',40),every:120e3,delay:14350,parse:pBsky('Collider','hollywood')},
+ {id:'m-wrap',name:'TheWrap',kind:'Movie news',mv:1,url:bsky('thewrap.com',40),every:120e3,delay:14700,parse:pBsky('TheWrap','hollywood')},
+ {id:'m-ebert',name:'RogerEbert.com',kind:'Movie news',mv:1,url:bsky('rogerebert.com',40),every:120e3,delay:15050,parse:pBsky('RogerEbert.com','hollywood')},
+ {id:'m-emp',name:'Empire',kind:'Movie news',mv:1,url:bsky('empireonline.com',40),every:120e3,delay:15400,parse:pBsky('Empire','hollywood')},
+ {id:'m-sr',name:'Screen Rant',kind:'Movie news',mv:1,url:bsky('screenrant.com',40),every:120e3,delay:15750,parse:pBsky('Screen Rant','hollywood')},
  {id:'b-reuters',name:'Reuters',kind:'Live news posts',url:bsky('reuters.com',40),every:15e3,delay:300,parse:pBsky('Reuters')},
  {id:'b-ap',name:'AP News',kind:'Live news posts',url:bsky('apnews.com',40),every:15e3,delay:900,parse:pBsky('AP News')},
  {id:'b-aj',name:'Al Jazeera',kind:'Live news posts',url:bsky('aljazeera.com'),every:15e3,delay:1500,parse:pBsky('Al Jazeera')},
@@ -1004,8 +1017,6 @@ function pEONET(j){const map={wildfires:['fire','moderate'],severeStorms:['weath
  return{id:'eonet:'+e.id,type:m[0],title:e.title,sev:m[1],lat:g.coordinates[1],lon:g.coordinates[0],country:'',ts:Date.parse(g.date),upd:Date.parse(g.date),source:'NASA EONET',
  url:(e.sources[0]&&e.sources[0].url)||e.link,status:'UNVERIFIED',desc:(c.title||'Event')+(g.magnitudeValue!=null?' · '+g.magnitudeValue+' '+(g.magnitudeUnit||''):'')+' · aggregated from third-party sources'}}).filter(Boolean)}
 
-function demoData(){const n=Date.now(),d=[['earthquake','critical',35.1,139.4,'Japan'],['fire','high',37.2,-120.5,'USA'],['weather','moderate',23.8,90.4,'Bangladesh'],['flood','moderate',-6.2,106.8,'Indonesia'],['volcanic','low',64.4,-17.3,'Iceland']];
- return d.map((x,i)=>({id:'demo:'+i,type:x[0],title:'[SYNTHETIC] '+x[0]+' sample',sev:x[1],lat:x[2],lon:x[3],country:x[4],ts:n-i*6e5,upd:n-i*6e5,source:'SYNTHETIC',url:'',status:'DEMO / SIMULATED',desc:'Synthetic data for interface demonstration. Not a real-world incident.'}))}
 
 async function getJSON(u,xml){if(navigator.onLine===false)throw new Error('no internet connection');const ac=new AbortController(),to=setTimeout(()=>ac.abort(),12e3);try{const r=await fetch(u,{signal:ac.signal,cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);if(xml){const d=new DOMParser().parseFromString(await r.text(),'text/xml');if(d.querySelector('parsererror'))throw new Error('unreadable feed');return d}return await r.json()}finally{clearTimeout(to)}}
 async function fetchSrc(s){let first;for(const c of [{url:s.urlf?s.urlf():s.url,parse:s.parse},...(s.alts||[])]){try{const j=await getJSON(c.url);s.cur=c.parse;s.via=c===undefined?'':'direct';return j}catch(e){first=first||e}}throw first}
@@ -1014,7 +1025,7 @@ async function poll(s){
  if(s.busy)return;s.busy=1;
  try{const j=await fetchSrc(s);
   const prev=new Set(s.ev.map(e=>e.id)),was=s.st,nm=s.name+' · '+s.kind;s.ev=(s.cur||s.parse)(j);const fresh=s.last?s.ev.filter(e=>!prev.has(e.id)):[];s.newN=fresh.length;s.st='ok';s.last=Date.now();s.fails=0;s.err='';s.hide=0;
-   if(fresh.length)logUp(nm,'+'+fresh.length+' new: '+fresh.slice(0,2).map(e=>e.title).join('; ')+(fresh.length>2?' …':''));}
+   if(fresh.length&&!s.market)logUp(nm,'+'+fresh.length+' new: '+fresh.slice(0,2).map(e=>e.title).join('; ')+(fresh.length>2?' …':''));}
  catch(e){s.st='error';s.fails++;s.err=friendly(e);s.hide=!s.last}
  finally{s.busy=0;}
  const wait=s.hide?(/not found/.test(s.err)?36e5:3e5):s.st==='ok'?s.every:Math.min(s.every*2**s.fails,6e5);
@@ -1022,20 +1033,20 @@ async function poll(s){
  refresh();
 }
 const online=()=>SRC.filter(s=>s.st==='ok').length;
-const isDemo=()=>S.demo||(SRC.every(s=>s.st==='error'));
+
 const KW=/bomb|explosion|blast|hijack|terror|suicide|shooting|gunmen|militants?|massacre|stabbing|attack/i;
 function incidents(){const out=[];NSRC.forEach(s=>s.ev.forEach(n=>{if(n.kind!=='WIKI'||!KW.test(n.title)||/cyber/i.test(n.title)||!/armed|attack|crime|law|disaster|accident|terror/i.test(n.cat))return;
  let best=1e9,loc=null;NR.forEach(x=>{if(!x.pt)return;const i=n.title.search(x.re);if(i>=0&&i<best){best=i;loc=x}});if(!loc)return;
  const t=/hijack/i.test(n.title)?'hijack':/bomb|explosion|blast/i.test(n.title)?'blast':'terror';
  out.push({id:'winc:'+n.id,type:t,title:n.title.slice(0,120),sev:'high',lat:loc.pt[0],lon:loc.pt[1],country:loc.n,ts:n.day,upd:n.day,source:'Wikipedia Current events · '+n.src,url:n.url||'https://en.wikipedia.org/wiki/Portal:Current_events',status:'UNVERIFIED · APPROXIMATE LOCATION',desc:n.title+' · Marker is the centre of the country named in the report, not the incident site. Time is the report date only (UTC day).'})}));return out}
-const events=()=>{if(isDemo())return demoData();const m=new Map();SRC.flatMap(s=>s.ev).concat(incidents()).forEach(e=>m.set(e.id,e));return[...m.values()]};
+const events=()=>{const m=new Map();SRC.flatMap(s=>s.ev).concat(incidents()).forEach(e=>m.set(e.id,e));return[...m.values()]};
 
 function visible(all){const q=S.q.toLowerCase();let a=all.filter(e=>(S.type==='all'||e.type===S.type)&&(!S.sev||SEV[e.sev].r>=SEV[S.sev].r)&&(!S.region||e.region===S.region)&&(!S.rng||e.ts>Date.now()-S.rng)&&
  (!q||[e.title,e.country,e.region,e.id,e.source,e.type].some(v=>String(v).toLowerCase().includes(q))));
  const k={time:(x,y)=>y.ts-x.ts,sev:(x,y)=>SEV[y.sev].r-SEV[x.sev].r||y.ts-x.ts,region:(x,y)=>x.region.localeCompare(y.region)||y.ts-x.ts,type:(x,y)=>x.type.localeCompare(y.type)||y.ts-x.ts};
  return a.sort(k[S.sort])}
 
-const fmt=t=>{const d=new Date(t);return S.utc?d.toISOString().slice(0,16).replace('T',' ')+' UTC':d.toLocaleString([], {hour12:false,dateStyle:'short',timeStyle:'short'})+' LOCAL'};
+const fmt=t=>{const d=new Date(t);return d.toLocaleString([], {hour12:false,dateStyle:'short',timeStyle:'short'})};
 const ago=t=>{const x=Math.round((Date.now()-t)/1e3);if(x<90)return Math.max(0,x)+' s ago';const m=Math.round(x/60);return m<60?m+' min ago':m<1440?Math.round(m/60)+' h ago':Math.round(m/1440)+' d ago'};
 
 let map,layer,markers=new Map();
@@ -1057,7 +1068,7 @@ function renderMkt(){const el=$('#mkt');if(!el)return;const rows=NSRC.filter(s=>
  el.innerHTML=rows.length?tbl(['#','Coin','Price (USD)','1 h','24 h','Market cap','24 h volume'],rows.map((c,i)=>`<tr class="${c.dir>0?'rup':c.dir<0?'rdn':''}"><td class="mono">${i+1}</td><td><b>${esc(c.sym)}</b> <small>${esc(c.name)}</small></td><td class="mono">${fp(c.price)}</td><td>${pc(c.ch1)}</td><td>${pc(c.ch24)}</td><td class="mono">${c.cap?'$'+nf.format(c.cap):'—'}</td><td class="mono">${c.vol?'$'+nf.format(c.vol):'—'}</td></tr>`))
   :'<p class="lbl" style="padding:14px">'+(NSRC.filter(s=>s.market).every(s=>s.st!=='ok')?'Connecting to market data…':'Loading…')+'</p>'}
 function renderInsa(){const el=$('#insa');if(!el)return;const re=/\b(India|Indian|Delhi|Mumbai|Modi|Kashmir|Pakistan|Bangladesh|Nepal|Sri Lanka|Bhutan|Maldives|Afghanistan|Dhaka|Islamabad|Kolkata|Chennai|Bengaluru)\b/,seen=new Set();
- const a=NSRC.filter(x=>!x.market&&!x.gm).flatMap(x=>x.ev).filter(n=>re.test(n.title)).filter(n=>{const k=n.title.toLowerCase().slice(0,60);if(seen.has(k))return false;seen.add(k);return true}).sort((x,y)=>y.ts-x.ts).slice(0,25),sig=a.map(n=>n.id).join('|')||'e';
+ const a=NSRC.filter(x=>!x.market&&!x.gm&&!x.mv).flatMap(x=>x.ev).filter(n=>re.test(n.title)).filter(n=>{const k=n.title.toLowerCase().slice(0,60);if(seen.has(k))return false;seen.add(k);return true}).sort((x,y)=>y.ts-x.ts).slice(0,isMob()?12:25),sig=a.map(n=>n.id).join('|')||'e';
  if(el._sig===sig)return;el._sig=sig;
  el.innerHTML=a.length?a.map(n=>{const i=`<span class="tt">${esc(n.title)}</span><div class="mono">${n.kind==='WIKI'?'':fmt(n.ts)+' · '}${esc(n.src)}</div>`;return n.url?`<a class="nw2" style="--c:#ff3b3b" href="${esc(n.url)}" target="_blank" rel="noopener noreferrer">${i}</a>`:`<div class="nw2" style="--c:#ff3b3b">${i}</div>`}).join(''):'<p class="lbl" style="padding:14px">No India or South Asia headlines right now.</p>'}
 const HLN={geo:['Geopolitics','#ff1e1e'],outbreak:['Major outbreaks','#ff4d2e'],science:['Science','#ff8a50'],tech:['Technology','#e0607e'],sports:['Sports','#c0455a'],medical:['Medical innovations','#d4727f'],hollywood:['Hollywood','#a07880'],bollywood:['Entertainment','#b58a8f']};
@@ -1074,14 +1085,14 @@ function hlCat(n){if(n.hlcat)return n.hlcat;const t=n.title,k=KW2.find(x=>x[1].t
 const wd=t=>new Set(String(t).toLowerCase().replace(/[^a-z0-9 ]/g,' ').split(/\s+/).filter(w=>w.length>3));
 const ov=(a,b)=>{let i=0;a.forEach(w=>{if(b.has(w))i++});return i};
 function renderNews(){const q=S.q.toLowerCase(),seen=new Set(),nowT=Date.now();
- let a=NSRC.filter(s=>!s.market&&!s.gm).flatMap(s=>s.ev).filter(n=>!/sport|arts|culture|entertain/i.test(n.cat)).map(n=>({...n,region:regOf(n.title),hc:hlCat(n)}))
+ let a=NSRC.filter(s=>!s.market&&!s.gm&&!s.mv).flatMap(s=>s.ev).filter(n=>!/sport|arts|culture|entertain/i.test(n.cat)).map(n=>({...n,region:regOf(n.title),hc:hlCat(n)}))
   .filter(n=>{const k=n.title.toLowerCase().slice(0,60);if(seen.has(k))return false;seen.add(k);return true})
   .filter(n=>(!NEWSR||n.region===NEWSR)&&(!NEWSC||n.hc===NEWSC)&&(!q||(n.title+n.cat+n.src+n.region).toLowerCase().includes(q))).sort((x,y)=>y.ts-x.ts);
  a.forEach(n=>{if(!S.nf.has(n.id))S.nf.set(n.id,S.nfirst?0:nowT)});S.nf.forEach((v,k)=>{if(!NSRC.some(x=>x.ev.some(y=>y.id===k)))S.nf.delete(k)});if(NSRC.every(x=>x.st!=='pending'))S.nfirst=0;
  $('#nwc').textContent='('+a.length+')';
- const ne=$('#news'),nl=a.slice(0,250).map(n=>({n,nwn:S.nf.get(n.id)>0&&nowT-S.nf.get(n.id)<9e4})),nsig=nl.map(x=>x.n.id+(x.nwn?1:0)).join('|')||('empty'+NSRC.every(x=>x.st!=='ok'));
+ const ne=$('#news'),nl=a.slice(0,isMob()?60:250).map(n=>({n,nwn:S.nf.get(n.id)>0&&nowT-S.nf.get(n.id)<9e4})),nsig=nl.map(x=>x.n.id+(x.nwn?1:0)).join('|')||('empty'+NSRC.every(x=>x.st!=='ok'));
  if(ne._sig!==nsig){ne._sig=nsig;const st=ne.scrollTop;
-  ne.innerHTML=nl.length?nl.map(({n,nwn})=>{const an=nwn&&!S.anim.has(n.id);if(an)S.anim.add(n.id);const col=catCol(n.cat),when=n.kind==='WIKI'?new Date(n.day).toUTCString().slice(5,11)+' (UTC day)':fmt(n.ts)+' · <span data-ago="'+n.ts+'">'+ago(n.ts)+'</span>',
+  ne.innerHTML=nl.length?nl.map(({n,nwn})=>{const an=nwn&&!S.anim.has(n.id);if(an)S.anim.add(n.id);const col=catCol(n.cat),when=n.kind==='WIKI'?new Date(n.day).toUTCString().slice(5,11):fmt(n.ts)+' · <span data-ago="'+n.ts+'">'+ago(n.ts)+'</span>',
    inner=`${nwn?'<b class="nbadge">NEW</b> ':''}<b>${esc(n.region.toUpperCase())}</b> · ${esc(n.hc?HLN[n.hc][0]:n.cat)}<span class="tt">${esc(n.title)}</span><div class="mono">${when} · ${esc(n.src)}${n.hc==='hollywood'||n.hc==='bollywood'?' · not fact-checked':''} · ${n.kind==='WIKI'?'WIKIPEDIA CURRENT EVENTS':(n.lab||'THE GUARDIAN API')}</div>`,cl='nw2'+(nwn?' nw':'')+(an?' an':'');
    return n.url?`<a class="${cl}" style="--c:${col}" href="${esc(n.url)}" target="_blank" rel="noopener noreferrer">${inner}</a>`:`<div class="${cl}" style="--c:${col}">${inner}</div>`}).join('')
    :'<p class="lbl" style="padding:14px">'+(NSRC.every(x=>x.st!=='ok')?'Waiting for the latest headlines…':'No headlines match this filter.')+'</p>';
@@ -1116,16 +1127,19 @@ function initMap(){
 }
 function logUp(src,msg,quiet){S.log.unshift({t:Date.now(),src,msg,q:!!quiet});if(S.log.length>40)S.log.length=40;if(!quiet)tick()}
 function tick(){const el=$('#tkin');if(!el)return;const it=S.log.filter(x=>!x.q).slice(0,8);
- const txt=it.length?it.map(x=>new Date(x.t).toISOString().slice(11,19)+'Z  '+esc(x.src)+': '+esc(x.msg)).join('   ◆   '):'Monitoring live sources every 30 s — new events and headlines will scroll here as they arrive.';
+ const txt=it.length?it.map(x=>(S.utc?new Date(x.t).toISOString().slice(11,19)+' UTC':new Date(x.t).toLocaleTimeString([], {hour12:false}))+'  '+esc(x.src)+': '+esc(x.msg)).join('   ◆   '):'Monitoring live sources every 30 s — new events and headlines will scroll here as they arrive.';
  el.innerHTML=txt;el.style.setProperty('--d',Math.max(30,it.reduce((a,x)=>a+x.msg.length,0)*.22)+'s')}
 let lastAll=[];
+const isMob=()=>typeof matchMedia==='function'?matchMedia('(max-width:1000px),(hover:none) and (pointer:coarse)').matches:innerWidth<=1000;
 const bars=r=>{const m=Math.max(1,...r.map(x=>x[1]));return r.length?r.map(x=>`<div class="br"><span>${esc(x[0])}</span><div class="bt"><div class="bf" style="width:${x[1]/m*100}%;${x[2]?'--c:'+x[2]:''}"></div></div><b class="mono">${x[1]}</b></div>`).join(''):'<p class="lbl" style="padding:10px">No data.</p>'};
 const CRY=document.querySelector('#mkt').closest('section');
 const card=(t,b,w)=>`<section class="mc${w?' wide':''}"${/Reported attacks/.test(t)?' data-k="att"':''}><h2>${t}</h2><div class="mb">${b}</div></section>`;
-const evBtn=e=>`<button class="ev" style="--c:${SEV[e.sev].c}" data-id="${esc(e.id)}"><b>${SEV[e.sev].i} ${SEV[e.sev].l}</b> · ${esc(e.type.toUpperCase())}<br>${esc(e.title)}<div class="mono">${fmt(e.ts)} · ${ago(e.ts)} · ${esc(e.source)}</div></button>`;
+const evBtn=e=>`<button class="ev" style="--c:${SEV[e.sev].c}" data-id="${esc(e.id)}"><b>${SEV[e.sev].i} ${SEV[e.sev].l}</b> · ${esc(e.type.toUpperCase())}<br>${etl(e.title)}<div class="mono">${fmt(e.ts)} · ${ago(e.ts)} · ${esc(e.source)}</div></button>`;
 const tbl=(h,rows)=>rows.length?`<div class="tw"><table class="tb"><thead><tr>${h.map(x=>'<th>'+x+'</th>').join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`:'<p class="lbl" style="padding:10px">No data.</p>';
-function gamingHTML(){const seen=new Set(),a=NSRC.filter(x=>x.gm).flatMap(x=>x.ev).filter(n=>{const k=n.title.toLowerCase().slice(0,60);if(seen.has(k))return false;seen.add(k);return true}).sort((x,y)=>y.ts-x.ts).slice(0,60);
+function gamingHTML(){const seen=new Set(),a=NSRC.filter(x=>x.gm).flatMap(x=>x.ev).filter(n=>{const k=n.title.toLowerCase().slice(0,60);if(seen.has(k))return false;seen.add(k);return true}).sort((x,y)=>y.ts-x.ts).slice(0,isMob()?20:60);
  return a.length?'<div>'+a.map(n=>{const i=`<span class="tt">${esc(n.title)}</span><div class="mono">${esc(n.src)} · <span data-ago="${n.ts}">${ago(n.ts)}</span></div>`;return n.url?`<a class="nw2" style="--c:#e0607e" href="${esc(n.url)}" target="_blank" rel="noopener noreferrer">${i}</a>`:`<div class="nw2" style="--c:#e0607e">${i}</div>`}).join('')+'</div>':'<p class="lbl" style="padding:14px">Gathering gaming news…</p>'}
+function moviesHTML(){const seen=new Set(),a=NSRC.filter(x=>!x.market&&!x.gm).flatMap(x=>x.ev.filter(n=>x.mv||['hollywood','bollywood'].includes(hlCat(n)))).filter(n=>{const k=n.title.toLowerCase().slice(0,60);if(seen.has(k))return false;seen.add(k);return true}).sort((x,y)=>y.ts-x.ts).slice(0,isMob()?20:60);
+ return a.length?'<p class="lbl" style="padding:6px 10px;text-transform:none">Entertainment news from film outlets. Not fact-checked.</p><div>'+a.map(n=>{const i=`<span class="tt">${esc(n.title)}</span><div class="mono">${esc(n.src)} · ${n.kind==='WIKI'?'':'<span data-ago="'+n.ts+'">'+ago(n.ts)+'</span>'}</div>`;return n.url?`<a class="nw2" style="--c:#a07880" href="${esc(n.url)}" target="_blank" rel="noopener noreferrer">${i}</a>`:`<div class="nw2" style="--c:#a07880">${i}</div>`}).join('')+'</div>':'<p class="lbl" style="padding:14px">Gathering movie news…</p>'}
 function renderMore(L){
  const cnt=(a,f)=>{const m=new Map();a.forEach(e=>{const k=f(e);m.set(k,(m.get(k)||0)+1)});return[...m]};
  const now=Date.now(),hrs=Array(24).fill(0);L.forEach(e=>{const h=Math.floor((now-e.ts)/36e5);if(h>=0&&h<24)hrs[h]++});const mx=Math.max(1,...hrs);
@@ -1136,7 +1150,7 @@ function renderMore(L){
  const cr=[...cm].sort((a,b)=>b[1].n-a[1].n).slice(0,15).map(([k,o])=>{const s=Object.values(SEV).find(x=>x.r===o.r);return`<tr><td>${esc(k)}</td><td class="mono">${o.n}</td><td>${s.i} ${s.l}</td><td class="mono">${ago(o.t)}</td></tr>`});
  const hi=L.filter(e=>e.sev==='critical'||e.sev==='high').sort((a,b)=>b.ts-a.ts).slice(0,10).map(evBtn).join('')||'<p class="lbl" style="padding:10px">No critical or high events.</p>';
  const big=eq.sort((a,b)=>b.m-a.m).slice(0,8).map(x=>evBtn(x.e)).join('')||'<p class="lbl" style="padding:10px">No earthquakes loaded.</p>';
- const md=L.filter(e=>e.id.startsWith('winc:')).sort((a,b)=>b.ts-a.ts).slice(0,12).map(e=>`<tr data-id="${esc(e.id)}" class="clk"><td>${esc(e.title)}</td><td>${esc(e.country)}</td><td class="mono">${new Date(e.ts).toISOString().slice(5,10)}</td></tr>`);
+ const md=L.filter(e=>e.id.startsWith('winc:')).sort((a,b)=>b.ts-a.ts).slice(0,12).map(e=>`<tr data-id="${esc(e.id)}" class="clk"><td>${etl(e.title)}</td><td>${esc(e.country)}</td><td class="mono">${new Date(e.ts).toISOString().slice(5,10)}</td></tr>`);
   const about=`<div class="ab"><p><b>Global alert level</b> is an interface aggregation of loaded events: CRITICAL if any critical event exists, HIGH if 5 or more high events, ELEVATED if any high event, otherwise NORMAL. It is not an official risk rating.</p>
 <p><b>Severity rules.</b> USGS earthquakes: M7+ critical, M6+ high, M4.5+ moderate, below that low. NASA EONET: volcanoes high, storms/fires/floods moderate, other low. NOAA NWS: Extreme critical, Severe high. Wikipedia-derived attack items: high.</p>
 <p><b>Data status.</b> VERIFIED SOURCE = reviewed by the publishing agency. PRELIMINARY = automatic, may be revised. UNVERIFIED = aggregated or media-derived, not confirmed. DEMO / SIMULATED = synthetic sample data shown only when no live source is reachable.</p>
@@ -1155,10 +1169,11 @@ function renderMore(L){
  card('Latest critical &amp; high events','<div>'+hi+'</div>')+
  card('Strongest earthquakes','<div>'+big+'</div>')+
  card('Top countries by events',tbl(['Country','Events','Worst','Latest'],cr))+
- card('Reported attacks, blasts &amp; hijacks (Wikipedia, approximate location)',tbl(['Report','Country','Date (UTC)'],md))+
+ card('Reported attacks, blasts &amp; hijacks (Wikipedia, approximate location)',tbl(['Report','Country','Date'],md))+
  card('Crypto movers, 24 h change (%)',(()=>{const r=NSRC.filter(x=>x.market).flatMap(x=>x.ev).filter(c=>c.ch24!=null).sort((a,b)=>b.ch24-a.ch24);return bars(r.map(c=>[(c.ch24>=0?'▲ ':'▼ ')+c.sym,+Math.abs(c.ch24).toFixed(2),c.ch24>=0?'#00d084':'#ff4d4d']))})())+
  card('Wildfires, storms, floods &amp; volcanoes','<div>'+(L.filter(e=>['fire','volcanic','weather','flood'].includes(e.type)).sort((a,b)=>SEV[b.sev].r-SEV[a.sev].r||b.ts-a.ts).slice(0,12).map(evBtn).join('')||'<p class="lbl" style="padding:10px">None in the selected range.</p>')+'</div>')+
  card('Gaming news',gamingHTML())+
+ card('Movies &amp; entertainment',moviesHTML())+
  card('About this data',about,1);const att=$('#more [data-k=att]');if(att)att.after(CRY)}
 function drawMap(list){
  if(!layer)return;const sig=S.zones+'|'+list.slice(0,800).map(e=>e.id+e.sev).join(',');if(sig===drawMap.sig)return;drawMap.sig=sig;layer.clearLayers();
@@ -1166,16 +1181,16 @@ function drawMap(list){
  list.filter(e=>e.sev==='critical').slice(0,15).forEach(e=>L.marker([e.lat,e.lon],{interactive:false,keyboard:false,icon:L.divIcon({className:'',html:'<div class="pk"></div>',iconSize:[18,18]})}).addTo(layer));
  list.slice(0,800).forEach(e=>{const c=SEV[e.sev];
   L.circleMarker([e.lat,e.lon],{radius:4+c.r*2,color:c.c,weight:1.5,fillColor:c.c,fillOpacity:.65})
-   .bindTooltip(esc(c.l+' · '+e.title)).on('click',()=>select(e.id)).addTo(layer)})
+   .bindTooltip(esc(c.l+' · ')+etl(e.title)).on('click',()=>select(e.id)).addTo(layer)})
 }
 function spot(e,fly){if(!map||!SEL)return;SEL.clearLayers();if(!e)return;const c=SEV[e.sev],t=e.title.length>70?e.title.slice(0,68)+'…':e.title;
- L.marker([e.lat,e.lon],{interactive:false,keyboard:false,zIndexOffset:1000,icon:L.divIcon({className:'',iconSize:[0,0],html:`<div class="spot" style="--c:${c.c}"><i></i><i></i><s></s><b>${c.i} ${c.l} · ${esc(t)}${e.country?' · '+esc(e.country):''}</b></div>`})}).addTo(SEL);
+ L.marker([e.lat,e.lon],{interactive:false,keyboard:false,zIndexOffset:1000,icon:L.divIcon({className:'',iconSize:[0,0],html:`<div class="spot" style="--c:${c.c}"><i></i><i></i><s></s><b>${c.i} ${c.l} · ${etl(t)}${e.country?' · '+esc(e.country):''}</b></div>`})}).addTo(SEL);
  if(fly){map.flyTo([e.lat,e.lon],Math.max(map.getZoom(),6),{duration:.8});const m=$('#mapS').getBoundingClientRect();if(m.top<0||m.bottom>innerHeight)$('#mapS').scrollIntoView({behavior:'smooth',block:'center'})}}
 function select(id,fly){S.sel=id;const e=lastAll.find(x=>x.id===id);renderDetail(e);spot(e,fly)}
 function renderDetail(e){const el=$('#detail');
  if(!e){el.innerHTML='<p class="lbl" style="padding:10px">Select an event on the map or in the feed.</p>';return}
  const c=SEV[e.sev],r=(k,v)=>`<div class="row"><span>${k}</span><span class="mono">${esc(v)}</span></div>`;
- el.innerHTML=`<div style="padding:8px 10px;border-left:3px solid ${c.c}"><b style="color:${c.c}">${c.i} ${c.l}</b> · ${esc(e.type.toUpperCase())}<br>${esc(e.title)}</div>`+
+ el.innerHTML=`<div style="padding:8px 10px;border-left:3px solid ${c.c}"><b style="color:${c.c}">${c.i} ${c.l}</b> · ${esc(e.type.toUpperCase())}<br>${etl(e.title)}</div>`+
  r('Location',e.country||'—')+r('Region',e.region)+r('Latitude',e.lat.toFixed(3)+'°')+r('Longitude',e.lon.toFixed(3)+'°')+r('Event time',fmt(e.ts))+r('Source updated',fmt(e.upd))+
  r('Source',e.source)+r('Data status',e.status)+r('ID',e.id)+`<p style="padding:4px 10px;color:var(--m)">${esc(e.desc)}</p>`+
  `<div class="tools">${/^https:\/\//.test(e.url)?`<a href="${esc(e.url)}" target="_blank" rel="noopener noreferrer"><button>Open source</button></a>`:''}<button id="vm">View on map</button><button id="cs">Clear spot</button></div>`;
@@ -1191,10 +1206,10 @@ function render(){
  if(CC.size>1000)CC.clear();
  // feed
  const nn=SRC.reduce((a,x)=>a+(x.newN||0),0);$('#cnt').textContent='('+list.length+')'+(nn?' +'+nn+' new':'');
- const fe=$('#feed'),fl=list.slice(0,120).map(e=>({e,nw:S.fs.get(e.id)>0&&now-S.fs.get(e.id)<6e4})),fsig=fl.map(x=>x.e.id+(x.nw?1:0)).join('|')||'empty';
+ const fe=$('#feed'),fl=list.slice(0,isMob()?40:120).map(e=>({e,nw:S.fs.get(e.id)>0&&now-S.fs.get(e.id)<6e4})),fsig=fl.map(x=>x.e.id+(x.nw?1:0)).join('|')||'empty';
  if(fe._sig!==fsig){fe._sig=fsig;const st=fe.scrollTop;
   fe.innerHTML=fl.length?fl.map(({e,nw})=>{const c=SEV[e.sev],an=nw&&!S.anim.has(e.id);if(an)S.anim.add(e.id);
-   return`<button class="ev${nw?' nw':''}${an?' an':''}" style="--c:${c.c}" data-id="${esc(e.id)}"><b>${c.i} ${c.l}</b> · ${esc(e.type.toUpperCase())}<br>${esc(e.title)}<div class="mono">${fmt(e.ts)} · <span data-ago="${e.ts}">${ago(e.ts)}</span> · ${esc(e.source)} · ${esc(e.status)}</div></button>`}).join(''):'<p class="lbl" style="padding:14px">No events in this time range or filter. Widen the time range above.</p>';
+   return`<button class="ev${nw?' nw':''}${an?' an':''}" style="--c:${c.c}" data-id="${esc(e.id)}"><b>${c.i} ${c.l}</b> · ${esc(e.type.toUpperCase())}<br>${etl(e.title)}<div class="mono">${fmt(e.ts)} · <span data-ago="${e.ts}">${ago(e.ts)}</span> · ${esc(e.source)} · ${esc(e.status)}</div></button>`}).join(''):'<p class="lbl" style="padding:14px">No events in this time range or filter. Widen the time range above.</p>';
   fe.scrollTop=st}
  lastAll=all;drawMap(list);const msig=list.length+'|'+S.rng+S.type+S.region+S.q+S.sev+'|'+list.slice(0,80).map(e=>e.id+e.sev).join(',');if(now-(S.mt||0)>10e3||S.msig!==msig){S.mt=now;S.msig=msig;renderMore(list)}renderNews();renderInsa();renderMkt();
  // stats
@@ -1210,10 +1225,9 @@ function render(){
  // sources
  
  // header status
- const demo=isDemo(),on=online(),lv2=$('#live');
- lv2.className='pill '+(on&&!demo?'live':'off');
- $('#liveT').textContent=navigator.onLine===false?'NO INTERNET · RETRYING':demo?(S.demo?'DEMO':'RECONNECTING'):'LIVE';
- $('#demoB').style.display=demo?'':'none';
+ const demo=false,on=online(),lv2=$('#live');
+ lv2.className='pill '+(on?'live':'off');
+ $('#liveT').textContent=navigator.onLine===false?'NO INTERNET · RETRYING':on?'LIVE':'CONNECTING';
  const lt=Math.max(0,...SRC.map(s=>s.last));$('#last').textContent=lt?new Date(lt).toISOString().slice(11,19)+' UTC':'—';
  if(S.sel)renderDetail(all.find(e=>e.id===S.sel));
  // notifications
@@ -1236,10 +1250,7 @@ $('#rng').onchange=e=>{S.rng=+e.target.value;render()};
 $('#sort').onchange=e=>{S.sort=e.target.value;render()};
 let dt;$('#q').oninput=e=>{clearTimeout(dt);dt=setTimeout(()=>{S.q=e.target.value.trim();render()},200)};
 const tog=(id,k,txt,after)=>{$(id).onclick=function(){S[k]=!S[k];this.setAttribute('aria-pressed',S[k]);if(txt)this.textContent=txt(S[k]);after&&after();render()}};
-tog('#tz','utc',v=>v?'UTC':'Local');$('#tz').setAttribute('aria-pressed','true');
-tog('#snd','sound',v=>'Sound: '+(v?'on':'off'));
-tog('#dm','demo');tog('#rl','relay',v=>'Relay: '+(v?'on':'off'));tog('#zn','zones');
-tog('#ntf','notify',v=>'Notify: '+(v?'on':'off'),()=>{if(S.notify&&window.Notification&&Notification.permission==='default')Notification.requestPermission();if(!window.Notification)S.notify=false});
+tog('#zn','zones');
 const T1=setInterval(()=>{if(document.hidden)return;const n=new Date();$('#utc').textContent=n.toISOString().slice(11,19);$('#loc').textContent=n.toLocaleTimeString([], {hour12:false})},1000);
 const T2=setInterval(render,30e3),T3=setInterval(()=>document.hidden||document.querySelectorAll('[data-ago]').forEach(x=>{x.textContent=ago(+x.dataset.ago)}),5e3);
 addEventListener('online',()=>[...SRC,...NSRC].forEach(x=>{clearTimeout(x.t);setTimeout(()=>poll(x),x.delay||0)}));addEventListener('offline',render);
