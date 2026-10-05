@@ -1025,18 +1025,21 @@ const friendly=e=>/HTTP (400|404)/.test(e.message)?'account or feed not found (w
 async function poll(s){
  if(s.busy)return;s.busy=1;
  try{const j=await fetchSrc(s);
-  const prev=new Set(s.ev.map(e=>e.id)),was=s.st,nm=s.name+' · '+s.kind;s.ev=(s.cur||s.parse)(j);const fresh=s.last?s.ev.filter(e=>!prev.has(e.id)):[];s.newN=fresh.length;s.st='ok';s.last=Date.now();s.fails=0;s.err='';s.hide=0;
+  const prev=new Set(s.ev.map(e=>e.id)),was=s.st,nm=s.name+' · '+s.kind;s.ev=(s.cur||s.parse)(j);if(s.market||s.ev.length!==prev.size||s.ev.some(e=>!prev.has(e.id)))DV++;const fresh=s.last?s.ev.filter(e=>!prev.has(e.id)):[];s.newN=fresh.length;s.st='ok';s.last=Date.now();s.fails=0;s.err='';s.hide=0;
    if(fresh.length&&!s.market)logUp(nm,'+'+fresh.length+' new: '+fresh.slice(0,2).map(e=>e.title).join('; ')+(fresh.length>2?' …':''));}
  catch(e){s.st='error';s.fails++;s.err=friendly(e);s.hide=!s.last}
  finally{s.busy=0;}
- const wait=s.hide?(/not found/.test(s.err)?36e5:3e5):s.st==='ok'?s.every:Math.min(s.every*2**s.fails,6e5);
+ const w0=s.hide?(/not found/.test(s.err)?36e5:3e5):s.st==='ok'?s.every:Math.min(s.every*2**s.fails,6e5);
+ const wait=document.hidden?Math.max(w0*3,45e3):w0;
  clearTimeout(s.t);s.next=wait;s.at=Date.now()+wait;s.t=setTimeout(()=>poll(s),wait);
  refresh();
 }
 const online=()=>SRC.filter(s=>s.st==='ok').length;
 
 const KW=/bomb|explosion|blast|hijack|terror|suicide|shooting|gunmen|militants?|massacre|stabbing|attack/i;
-function incidents(){const out=[];NSRC.forEach(s=>s.ev.forEach(n=>{if(n.kind!=='WIKI'||!KW.test(n.title)||/cyber/i.test(n.title)||!/armed|attack|crime|law|disaster|accident|terror/i.test(n.cat))return;
+let incK=-1,incV=[];
+function incidents(){if(incK===DV)return incV;incK=DV;return incV=incidents0()}
+function incidents0(){const out=[];NSRC.forEach(s=>s.ev.forEach(n=>{if(n.kind!=='WIKI'||!KW.test(n.title)||/cyber/i.test(n.title)||!/armed|attack|crime|law|disaster|accident|terror/i.test(n.cat))return;
  let best=1e9,loc=null;NR.forEach(x=>{if(!x.pt)return;const i=n.title.search(x.re);if(i>=0&&i<best){best=i;loc=x}});if(!loc)return;
  const t=/hijack/i.test(n.title)?'hijack':/bomb|explosion|blast/i.test(n.title)?'blast':'terror';
  out.push({id:'winc:'+n.id,type:t,title:n.title.slice(0,120),sev:'high',lat:loc.pt[0],lon:loc.pt[1],country:loc.n,ts:n.day,upd:n.day,source:'Wikipedia Current events · '+n.src,url:n.url||'https://en.wikipedia.org/wiki/Portal:Current_events',status:'UNVERIFIED · APPROXIMATE LOCATION',desc:n.title+' · Marker is the centre of the country named in the report, not the incident site. Time is the report date only (UTC day).'})}));return out}
@@ -1068,7 +1071,7 @@ const pc=v=>v==null||isNaN(v)?'<span class="mono">—</span>':`<span class="mono
 function renderMkt(){const el=$('#mkt');if(!el)return;const rows=NSRC.filter(s=>s.market).flatMap(s=>s.ev),ms=rows.map(c=>c.id+c.price+c.ch24).join('|')||'e';if(el._sig===ms)return;el._sig=ms;
  el.innerHTML=rows.length?tbl(['#','Coin','Price (USD)','1 h','24 h','Market cap','24 h volume'],rows.map((c,i)=>`<tr class="${c.dir>0?'rup':c.dir<0?'rdn':''}"><td class="mono">${i+1}</td><td><b>${esc(c.sym)}</b> <small>${esc(c.name)}</small></td><td class="mono">${fp(c.price)}</td><td>${pc(c.ch1)}</td><td>${pc(c.ch24)}</td><td class="mono">${c.cap?'$'+nf.format(c.cap):'—'}</td><td class="mono">${c.vol?'$'+nf.format(c.vol):'—'}</td></tr>`))
   :'<p class="lbl" style="padding:14px">'+(NSRC.filter(s=>s.market).every(s=>s.st!=='ok')?'Connecting to market data…':'Loading…')+'</p>'}
-function renderInsa(){const el=$('#insa');if(!el)return;const re=/\b(India|Indian|Delhi|Mumbai|Modi|Kashmir|Pakistan|Bangladesh|Nepal|Sri Lanka|Bhutan|Maldives|Afghanistan|Dhaka|Islamabad|Kolkata|Chennai|Bengaluru)\b/,seen=new Set();
+function renderInsa(){const gk=DV+'|'+(Date.now()/15e3|0)+'|'+isMob();if(renderInsa.gk===gk)return;renderInsa.gk=gk;const el=$('#insa');if(!el)return;const re=/\b(India|Indian|Delhi|Mumbai|Modi|Kashmir|Pakistan|Bangladesh|Nepal|Sri Lanka|Bhutan|Maldives|Afghanistan|Dhaka|Islamabad|Kolkata|Chennai|Bengaluru)\b/,seen=new Set();
  const a=NSRC.filter(x=>!x.market&&!x.gm&&!x.mv).flatMap(x=>x.ev).filter(n=>re.test(n.title)).filter(n=>{const k=n.title.toLowerCase().slice(0,60);if(seen.has(k))return false;seen.add(k);return true}).sort((x,y)=>y.ts-x.ts).slice(0,isMob()?6:25),sig=a.map(n=>n.id).join('|')||'e';
  if(el._sig===sig)return;el._sig=sig;
  el.innerHTML=a.length?a.map(n=>{const i=`<span class="tt">${esc(n.title)}</span><div class="mono">${n.kind==='WIKI'?'':fmt(n.ts)+' · '}${esc(n.src)}</div>`;return n.url?`<a class="nw2" style="--c:#ff3b3b" href="${esc(n.url)}" target="_blank" rel="noopener noreferrer">${i}</a>`:`<div class="nw2" style="--c:#ff3b3b">${i}</div>`}).join(''):'<p class="lbl" style="padding:14px">No India or South Asia headlines right now.</p>'}
@@ -1081,11 +1084,13 @@ const KW2=[['outbreak',/outbreak|epidemic|pandemic|cholera|ebola|measles|mpox|de
  ['science',/\bnasa\b|\bspace\b|planet|telescope|asteroid|climate|physics|species|fossil|scientists|quantum|\bmars\b|\bmoon\b|rocket|astronom|biolog|researchers/i],
  ['tech',/\bai\b|artificial intelligence|\bchip\b|software|apple|google|microsoft|openai|robot|cyber|startup|smartphone|semiconductor|nvidia|tesla|data breach|blockchain|\bapp\b/i],
  ['geo',/\bwar\b|ceasefire|sanction|president|prime minister|election|parliament|treaty|\bnato\b|troops|missile|border|diplomat|summit|tariff|talks|minister|government|protest|coup|gaza|ukraine|russia|china|taiwan|iran|israel|pakistan|india/i]];
-function hlCat(n){if(n.hlcat)return n.hlcat;const t=n.title,k=KW2.find(x=>x[1].test(t));if(k)return k[0];
+const HCM=new Map();
+function hlCat(n){const k=n.id+'|'+n.title;if(HCM.has(k))return HCM.get(k);if(HCM.size>5000)HCM.clear();const v=hlCat0(n);HCM.set(k,v);return v}
+function hlCat0(n){if(n.hlcat)return n.hlcat;const t=n.title,k=KW2.find(x=>x[1].test(t));if(k)return k[0];
  if(n.kind==='WIKI'){const c=n.cat||'';return/sport/i.test(c)?'sports':/arts|culture/i.test(c)?'hollywood':/science|tech/i.test(c)?'science':/health/i.test(c)?'medical':/conflict|politic|relation|law/i.test(c)?'geo':null}return null}
 const wd=t=>new Set(String(t).toLowerCase().replace(/[^a-z0-9 ]/g,' ').split(/\s+/).filter(w=>w.length>3));
 const ov=(a,b)=>{let i=0;a.forEach(w=>{if(b.has(w))i++});return i};
-function renderNews(){const q=S.q.toLowerCase(),seen=new Set(),nowT=Date.now();
+function renderNews(){const gk=DV+'|'+NEWSR+'|'+NEWSC+'|'+S.q+'|'+(Date.now()/15e3|0)+'|'+isMob();if(renderNews.gk===gk)return;renderNews.gk=gk;const q=S.q.toLowerCase(),seen=new Set(),nowT=Date.now();
  let a=NSRC.filter(s=>!s.market&&!s.gm&&!s.mv).flatMap(s=>s.ev).filter(n=>!/sport|arts|culture|entertain/i.test(n.cat)).map(n=>({...n,region:regOf(n.title),hc:hlCat(n)}))
   .filter(n=>{const k=n.title.toLowerCase().slice(0,60);if(seen.has(k))return false;seen.add(k);return true})
   .filter(n=>(!NEWSR||n.region===NEWSR)&&(!NEWSC||n.hc===NEWSC)&&(!q||(n.title+n.cat+n.src+n.region).toLowerCase().includes(q))).sort((x,y)=>y.ts-x.ts);
@@ -1237,7 +1242,7 @@ function render(){
 function notify(e){if(Date.now()-S.lastNote<6e4)return;S.lastNote=Date.now();
  if(S.notify&&window.Notification&&Notification.permission==='granted')new Notification('CRITICAL EVENT DETECTED',{body:e.title+' ('+e.source+')'});
  if(S.sound)try{const a=new AudioContext(),o=a.createOscillator();o.connect(a.destination);o.frequency.value=660;o.onended=()=>a.close();o.start();o.stop(a.currentTime+.25)}catch{}}
-let rT=0,dirty=0;const refresh=()=>{if(rT)return;rT=setTimeout(()=>{rT=0;render()},600)};
+let DV=0,rT=0,dirty=0;const refresh=()=>{if(rT)return;rT=setTimeout(()=>{rT=0;render()},600)};
 
 // UI wiring (single set of listeners)
 const TL={all:'All types',terror:'Terror attacks',blast:'Blasts',hijack:'Hijacks',earthquake:'Earthquakes',weather:'Weather',fire:'Fires',flood:'Floods',volcanic:'Volcanoes',other:'Other'};
