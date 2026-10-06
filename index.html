@@ -1112,7 +1112,7 @@ let RDQ=Promise.resolve();
 const RPX=[u=>'https://corsproxy.io/?url='+encodeURIComponent(u),u=>'https://api.allorigins.win/raw?url='+encodeURIComponent(u)];
 async function fetchSrc(s){let first;for(const c of [{url:s.urlf?s.urlf():s.url,parse:s.parse},...(s.alts||[])]){try{const j=await getJSON(c.url);s.cur=c.parse;s.via='direct';return j}catch(e){first=first||e;if(/reddit\.com/.test(c.url)&&(s.fails<2||s.fails%6===0)){const r=await(RDQ=RDQ.catch(()=>{}).then(async()=>{for(const f of RPX){try{await new Promise(z=>setTimeout(z,1500));const j=await getJSON(f(c.url));if(j&&j.data&&j.data.children)return j}catch(_){}}return null}));if(r){s.cur=c.parse;s.via='proxy';return r}}}}throw first}
 const friendly=e=>/HTTP (400|404)/.test(e.message)?'account or feed not found (will retry hourly)':navigator.onLine===false?'no internet connection':e.name==='AbortError'?'timeout':e.name==='TypeError'?'blocked by browser (CORS) or network error'+(S.relay?'; relay also failed':''):e.name==='SyntaxError'?'unexpected response (possibly rate-limited)':e.message;
-const PACE=4,MIN_POLL=60e3,RENDER_GAP=5e3,BADGE_FIRSTSEEN=2*6e4,BADGE_PUBLISHED=3*6e4,BADGE_MAX=5;
+const PACE=4,MIN_POLL=60e3,RENDER_GAP=5e3,NEWS_GAP=46e3,BADGE_FIRSTSEEN=30e3,BADGE_PUBLISHED=30e3,BADGE_MAX=2;
 async function poll(s){
  if(s.busy)return;s.busy=1;
  try{const j=await fetchSrc(s);
@@ -1183,11 +1183,12 @@ function hlCat0(n){if(n.hlcat)return n.hlcat;const t=n.title,k=KW2.find(x=>x[1].
  if(n.kind==='WIKI'){const c=n.cat||'';return/sport/i.test(c)?'sports':/arts|culture/i.test(c)?'hollywood':/science|tech/i.test(c)?'science':/health/i.test(c)?'medical':/conflict|politic|relation|law/i.test(c)?'geo':null}return null}
 const wd=t=>new Set(String(t).toLowerCase().replace(/[^a-z0-9 ]/g,' ').split(/\s+/).filter(w=>w.length>3));
 const ov=(a,b)=>{let i=0;a.forEach(w=>{if(b.has(w))i++});return i};
-function renderNews(){const gk=DV+'|'+NEWSR+'|'+NEWSC+'|'+S.q+'|'+(Date.now()/15e3|0)+'|'+isMob();if(renderNews.gk===gk)return;renderNews.gk=gk;const q=S.q.toLowerCase(),seen=new Set(),nowT=Date.now();
+function renderNews(){const gk=DV+'|'+NEWSR+'|'+NEWSC+'|'+S.q+'|'+(Date.now()/5e3|0)+'|'+isMob();if(renderNews.gk===gk)return;renderNews.gk=gk;const q=S.q.toLowerCase(),seen=new Set(),nowT=Date.now();
  let a=NSRC.filter(s=>!s.market&&!s.gm&&!s.mv).flatMap(s=>s.ev).filter(n=>!/arts|culture|entertain/i.test(n.cat)).map(n=>({...n,region:n.regionHint||regOf(n.title),hc:hlCat(n)}))
   .filter(n=>{const k=n.title.toLowerCase().slice(0,60);if(seen.has(k))return false;seen.add(k);return true})
   .filter(n=>(!NEWSR||n.region===NEWSR)&&(!NEWSC||n.hc===NEWSC)&&(!q||(n.title+n.cat+n.src+n.region).toLowerCase().includes(q))).sort((x,y)=>y.ts-x.ts);
  a.forEach(n=>{if(!S.nf.has(n.id))S.nf.set(n.id,S.nfirst?0:nowT)});S.nf.forEach((v,k)=>{if(!NSRC.some(x=>x.ev.some(y=>y.id===k)))S.nf.delete(k)});S.nfirst=0;
+ if(!S.rel){S.rel=new Set;S.relT=0}if(S.rel.size>2e3)S.rel.clear();{const pend=a.filter(n=>S.nf.get(n.id)>0&&!S.rel.has(n.id));if(pend.length&&nowT-S.relT>=NEWS_GAP){pend.forEach(n=>{S.rel.add(n.id);S.nf.set(n.id,nowT)});S.relT=nowT}a=a.filter(n=>!(S.nf.get(n.id)>0)||S.rel.has(n.id))}
  $('#nwc').textContent='';
  const ne=$('#news'),nl=mix(a,isMob()?6:250).map(n=>({n,nwn:(S.nf.get(n.id)>0&&nowT-S.nf.get(n.id)<BADGE_FIRSTSEEN)||(n.kind!=='WIKI'&&nowT-n.ts>=-6e4&&nowT-n.ts<BADGE_PUBLISHED)}));let bc=0;nl.forEach(x=>{if(x.nwn&&++bc>BADGE_MAX)x.nwn=false});const nsig=nl.map(x=>x.n.id+(x.nwn?1:0)).join('|')||('empty'+NSRC.every(x=>x.st!=='ok'));
  if(ne._sig!==nsig){ne._sig=nsig;const st=ne.scrollTop;
@@ -1348,7 +1349,7 @@ let dt;$('#q').oninput=e=>{clearTimeout(dt);dt=setTimeout(()=>{S.q=e.target.valu
 const tog=(id,k,txt,after)=>{$(id).onclick=function(){S[k]=!S[k];this.setAttribute('aria-pressed',S[k]);if(txt)this.textContent=txt(S[k]);after&&after();render()}};
 tog('#zn','zones');
 const T1=setInterval(()=>{if(document.hidden)return;const n=new Date();$('#utc').textContent=n.toISOString().slice(11,19);$('#loc').textContent=n.toLocaleTimeString([], {hour12:false})},1000);
-const T2=setInterval(render,30e3),T3=setInterval(()=>document.hidden||document.querySelectorAll('[data-ago]').forEach(x=>{x.textContent=ago(+x.dataset.ago)}),5e3);
+const T2=setInterval(render,10e3),T3=setInterval(()=>document.hidden||document.querySelectorAll('[data-ago]').forEach(x=>{x.textContent=ago(+x.dataset.ago)}),5e3);
 addEventListener('online',()=>[...SRC,...NSRC].forEach(x=>{clearTimeout(x.t);setTimeout(()=>poll(x),x.delay||0)}));addEventListener('offline',render);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(dirty){dirty=0;render()}[...SRC,...NSRC].forEach(x=>{clearTimeout(x.t);setTimeout(()=>poll(x),x.delay||0)})}});
 addEventListener('pagehide',()=>{clearInterval(T1);clearInterval(T2);clearInterval(T3);clearTimeout(rT);RO&&RO.disconnect();[...SRC,...NSRC].forEach(x=>clearTimeout(x.t))}); // refresh relative times and source countdowns
