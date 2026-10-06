@@ -953,10 +953,6 @@ const pmcUrl=()=>{const f=d=>new Date(Date.now()-d*864e5).toISOString().slice(0,
 const WEBZ_TOKEN='2b59c86e-b973-4728-b510-e1dacb3e4876'; // visible to anyone who opens the page source: rotate it, or move this call to a server
 const webzUrl=()=>'https://api.webz.io/api/news?token='+WEBZ_TOKEN+'&q='+encodeURIComponent('language:english')+'&sort=crawled&ts='+(Date.now()-6*36e5)+'&format=json&size=25&webz_reporter=true&includeSyndicated=false&allowNewsHistory=false';
 const pWebz=j=>(j.posts||[]).filter(p=>p.title&&/^https?:\/\//.test(p.url||'')).map(p=>({id:'wz:'+(p.uuid||p.url),kind:'SOCIAL',lab:'WEBZ.IO AGGREGATED NEWS · UNVERIFIED',cat:'News',title:String(p.title).slice(0,240),src:(p.thread&&p.thread.site)||'Webz.io',url:p.url,ts:Date.parse(p.published||p.crawled)||Date.now(),day:0}));
-const pLemmy=name=>j=>((j||{}).posts||[]).map(x=>x.post).filter(p=>p&&p.name&&!p.nsfw&&!p.deleted&&!p.removed).map(p=>({id:'lm:'+p.id,kind:'SOCIAL',lab:'LEMMY POST · UNVERIFIED',cat:'Lemmy',title:String(p.name).slice(0,240),src:name,url:/^https:\/\//.test(p.url||'')?p.url:'',ts:Date.parse(p.published.endsWith('Z')?p.published:p.published+'Z')||Date.now(),day:0})).filter(n=>n.url);
-const pRss=name=>j=>((j||{}).items||[]).filter(x=>x.title&&/^https?:\/\//.test(x.link||'')).map(x=>({id:'rss:'+x.link,kind:'RSS',lab:'RSS FEED VIA RSS2JSON',cat:'News',title:String(x.title).replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim().slice(0,240),src:name,url:x.link,ts:Date.parse(String(x.pubDate||'').replace(' ','T')+'Z')||Date.now(),day:0})).filter(n=>n.title.length>10);
-const rss2=u=>'https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(u);
-const pWikinews=j=>((((j||{}).query)||{}).categorymembers||[]).map(m=>({id:'wn:'+m.pageid,kind:'RSS',lab:'WIKINEWS',cat:'News',title:String(m.title).slice(0,240),src:'Wikinews',url:'https://en.wikinews.org/wiki/'+encodeURIComponent(String(m.title).replace(/ /g,'_')),ts:Date.parse(m.timestamp)||Date.now(),day:0}));
 const NSRC=[
  {id:'h-pbs',name:'PBS NewsHour',kind:'Headlines',hl:1,url:bsky('pbsnews.org',50),every:150e3,delay:400,parse:pBsky('PBS NewsHour')},
  {id:'h-nature',name:'Nature',kind:'Headlines',hl:1,url:bsky('nature.com',50),every:150e3,delay:800,parse:pBsky('Nature','science')},
@@ -1037,61 +1033,6 @@ const NSRC=[
  {id:'gu-latam',name:'Guardian Latin America',kind:'South America news',urlf:()=>guardianQ('Brazil OR Argentina OR Chile OR Colombia OR Peru',25),every:120e3,delay:8700,parse:hint(pGuardian,'South America','The Guardian · Latin America')},
  {id:'gu-mideast',name:'Guardian Middle East',kind:'Middle East news',urlf:()=>guardianQ('Middle East',25),every:120e3,delay:9100,parse:hint(pGuardian,'Middle East','The Guardian · Middle East')},
  {id:'gu-arctic',name:'Guardian Polar',kind:'Arctic / Antarctic news',urlf:()=>guardianQ('Arctic Antarctic',20),every:180e3,delay:9500,parse:hint(pGuardian,'Arctic / Antarctic','The Guardian · Polar')},
- // ---- Added sources ----
- {id:'x-npr',name:'NPR',kind:'Live news posts',url:bsky('npr.org',40),every:45e3,delay:16000,parse:pBsky('NPR','geo')},
- {id:'x-washingtonpost',name:'Washington Post',kind:'Live news posts',url:bsky('washingtonpost.com',40),every:45e3,delay:16350,parse:pBsky('Washington Post')},
- {id:'x-theguardian',name:'The Guardian (Bluesky)',kind:'Live news posts',url:bsky('theguardian.com',40),every:45e3,delay:16700,parse:pBsky('The Guardian (Bluesky)')},
- {id:'x-bloomberg',name:'Bloomberg',kind:'Live news posts',url:bsky('bloomberg.com',40),every:45e3,delay:17050,parse:pBsky('Bloomberg')},
- {id:'x-ft',name:'Financial Times',kind:'Live news posts',url:bsky('ft.com',40),every:45e3,delay:17400,parse:pBsky('Financial Times')},
- {id:'x-politico',name:'Politico',kind:'Live news posts',url:bsky('politico.com',40),every:45e3,delay:17750,parse:pBsky('Politico','geo')},
- {id:'x-axios',name:'Axios',kind:'Live news posts',url:bsky('axios.com',40),every:45e3,delay:18100,parse:pBsky('Axios')},
- {id:'x-cnbc',name:'CNBC',kind:'Live news posts',url:bsky('cnbc.com',40),every:45e3,delay:18450,parse:pBsky('CNBC')},
- {id:'x-time',name:'TIME',kind:'Live news posts',url:bsky('time.com',40),every:45e3,delay:18800,parse:pBsky('TIME')},
- {id:'x-usatoday',name:'USA Today',kind:'Live news posts',url:bsky('usatoday.com',40),every:45e3,delay:19150,parse:pBsky('USA Today')},
- {id:'x-latimes',name:'Los Angeles Times',kind:'Live news posts',url:bsky('latimes.com',40),every:45e3,delay:19500,parse:pBsky('Los Angeles Times')},
- {id:'x-newsweek',name:'Newsweek',kind:'Live news posts',url:bsky('newsweek.com',40),every:45e3,delay:19850,parse:pBsky('Newsweek')},
- {id:'x-economist',name:'The Economist',kind:'Live news posts',url:bsky('economist.com',40),every:45e3,delay:20200,parse:pBsky('The Economist')},
- {id:'x-news',name:'Sky News',kind:'Live news posts',url:bsky('news.sky.com',40),every:45e3,delay:20550,parse:pBsky('Sky News')},
- {id:'x-hindustantimes',name:'Hindustan Times',kind:'Live news posts',url:bsky('hindustantimes.com',40),every:45e3,delay:20900,parse:pBsky('Hindustan Times')},
- {id:'x-indianexpress',name:'The Indian Express',kind:'Live news posts',url:bsky('indianexpress.com',40),every:45e3,delay:21250,parse:pBsky('The Indian Express')},
- {id:'x-thedailystar',name:'The Daily Star (BD)',kind:'Live news posts',url:bsky('thedailystar.net',40),every:45e3,delay:21600,parse:pBsky('The Daily Star (BD)')},
- {id:'x-tbsnews',name:'The Business Standard (BD)',kind:'Live news posts',url:bsky('tbsnews.net',40),every:45e3,delay:21950,parse:pBsky('The Business Standard (BD)')},
- {id:'x-dhakatribune',name:'Dhaka Tribune',kind:'Live news posts',url:bsky('dhakatribune.com',40),every:45e3,delay:22300,parse:pBsky('Dhaka Tribune')},
- {id:'x-scmp',name:'South China Morning Post',kind:'Live news posts',url:bsky('scmp.com',40),every:45e3,delay:22650,parse:pBsky('South China Morning Post')},
- {id:'x-japantimes',name:'The Japan Times',kind:'Live news posts',url:bsky('japantimes.co.jp',40),every:45e3,delay:23000,parse:pBsky('The Japan Times')},
- {id:'x-dawn',name:'Dawn (Pakistan)',kind:'Live news posts',url:bsky('dawn.com',40),every:45e3,delay:23350,parse:pBsky('Dawn (Pakistan)')},
- {id:'x-timesofisrael',name:'Times of Israel',kind:'Live news posts',url:bsky('timesofisrael.com',40),every:45e3,delay:23700,parse:pBsky('Times of Israel')},
- {id:'x-africanews',name:'Africanews',kind:'Live news posts',url:bsky('africanews.com',40),every:45e3,delay:24050,parse:pBsky('Africanews')},
- {id:'x-abc',name:'ABC Australia (Bluesky)',kind:'Live news posts',url:bsky('abc.net.au',40),every:45e3,delay:24400,parse:pBsky('ABC Australia (Bluesky)')},
- {id:'x-cbc',name:'CBC News',kind:'Live news posts',url:bsky('cbc.ca',40),every:45e3,delay:24750,parse:pBsky('CBC News')},
- {id:'x-rte',name:'RTE News',kind:'Live news posts',url:bsky('rte.ie',40),every:45e3,delay:25100,parse:pBsky('RTE News')},
- {id:'x-euronews',name:'Euronews',kind:'Live news posts',url:bsky('euronews.com',40),every:45e3,delay:25450,parse:pBsky('Euronews')},
- {id:'x-trtworld',name:'TRT World',kind:'Live news posts',url:bsky('trtworld.com',40),every:45e3,delay:25800,parse:pBsky('TRT World')},
- {id:'x-thediplomat',name:'The Diplomat',kind:'Live news posts',url:bsky('thediplomat.com',40),every:45e3,delay:26150,parse:pBsky('The Diplomat','geo')},
- {id:'x-ms-world',name:'Mastodon #worldnews',kind:'#worldnews posts',url:'https://mastodon.social/api/v1/timelines/tag/worldnews?limit=20',every:45e3,delay:26850,parse:j=>pMasto(j).map(n=>({...n,id:'msw:'+n.id,src:'Mastodon #worldnews'}))},
- {id:'x-ms-news',name:'Mastodon #news',kind:'#news posts',url:'https://mastodon.social/api/v1/timelines/tag/news?limit=20',every:45e3,delay:27200,parse:j=>pMasto(j).map(n=>({...n,id:'msn:'+n.id,src:'Mastodon #news'}))},
- {id:'x-ms-world2',name:'mastodon.world #breakingnews',kind:'#breakingnews posts',url:'https://mastodon.world/api/v1/timelines/tag/breakingnews?limit=20',every:45e3,delay:27550,parse:j=>pMasto(j).map(n=>({...n,id:'mww:'+n.id,src:'mastodon.world #breakingnews'}))},
- {id:'x-lemmy',name:'Lemmy World News',kind:'Live posts',url:'https://lemmy.world/api/v3/post/list?community_name=world&sort=New&limit=40',every:60e3,delay:27900,parse:pLemmy('Lemmy World News')},
- {id:'x-rss0',name:'BBC News',kind:'RSS headlines',url:rss2('http://feeds.bbci.co.uk/news/world/rss.xml'),every:300e3,delay:40000,parse:pRss('BBC News')},
- {id:'x-rss1',name:'NPR News',kind:'RSS headlines',url:rss2('https://feeds.npr.org/1004/rss.xml'),every:300e3,delay:41200,parse:pRss('NPR News')},
- {id:'x-rss2',name:'Al Jazeera (RSS)',kind:'RSS headlines',url:rss2('https://www.aljazeera.com/xml/rss/all.xml'),every:300e3,delay:42400,parse:pRss('Al Jazeera (RSS)')},
- {id:'x-rss3',name:'DW (RSS)',kind:'RSS headlines',url:rss2('https://rss.dw.com/rdf/rss-en-all'),every:300e3,delay:43600,parse:pRss('DW (RSS)')},
- {id:'x-rss4',name:'Sky News (RSS)',kind:'RSS headlines',url:rss2('https://feeds.skynews.com/feeds/rss/world.xml'),every:300e3,delay:44800,parse:pRss('Sky News (RSS)')},
- {id:'x-rss5',name:'France 24 (RSS)',kind:'RSS headlines',url:rss2('https://www.france24.com/en/rss'),every:300e3,delay:46000,parse:pRss('France 24 (RSS)')},
- {id:'x-rss6',name:'Times of India',kind:'RSS headlines',url:rss2('https://timesofindia.indiatimes.com/rssfeeds/296589646.cms'),every:300e3,delay:47200,parse:pRss('Times of India')},
- {id:'x-rss7',name:'The Hindu (RSS)',kind:'RSS headlines',url:rss2('https://www.thehindu.com/news/international/feeder/default.rss'),every:300e3,delay:48400,parse:pRss('The Hindu (RSS)')},
- {id:'x-rss8',name:'Hindustan Times',kind:'RSS headlines',url:rss2('https://www.hindustantimes.com/feeds/rss/world-news/rssfeed.xml'),every:300e3,delay:49600,parse:pRss('Hindustan Times')},
- {id:'x-rss9',name:'The Daily Star (BD)',kind:'RSS headlines',url:rss2('https://www.thedailystar.net/frontpage/rss.xml'),every:300e3,delay:50800,parse:pRss('The Daily Star (BD)')},
- {id:'x-rss10',name:'NYT World (RSS)',kind:'RSS headlines',url:rss2('https://rss.nytimes.com/services/xml/rss/nyt/World.xml'),every:300e3,delay:52000,parse:pRss('NYT World (RSS)')},
- {id:'x-rss11',name:'CNBC',kind:'RSS headlines',url:rss2('https://www.cnbc.com/id/100727362/device/rss/rss.html'),every:300e3,delay:53200,parse:pRss('CNBC')},
- {id:'x-rss12',name:'ABC Australia (RSS)',kind:'RSS headlines',url:rss2('https://www.abc.net.au/news/feed/51120/rss.xml'),every:300e3,delay:54400,parse:pRss('ABC Australia (RSS)')},
- {id:'x-rss13',name:'CBC World',kind:'RSS headlines',url:rss2('https://www.cbc.ca/webfeed/rss/rss-world'),every:300e3,delay:55600,parse:pRss('CBC World')},
- {id:'x-rss14',name:'The Japan Times (RSS)',kind:'RSS headlines',url:rss2('https://www.japantimes.co.jp/feed/'),every:300e3,delay:56800,parse:pRss('The Japan Times (RSS)')},
- {id:'x-wikinews',name:'Wikinews',kind:'Published news',url:'https://en.wikinews.org/w/api.php?action=query&list=categorymembers&cmtitle=Category:Published&cmsort=timestamp&cmdir=desc&cmprop=title|ids|timestamp&cmlimit=30&format=json&origin=*',every:300e3,delay:58000,parse:pWikinews},
- {id:'x-lemmy2',name:'Lemmy News',kind:'Live posts',url:'https://lemmy.world/api/v3/post/list?community_name=news&sort=New&limit=40',every:60e3,delay:59200,parse:pLemmy('Lemmy News')},
- {id:'x-r-politics',name:'Reddit r/politics',kind:'Live posts',url:rdu('r/politics'),every:90e3,delay:29400,parse:pReddit('Reddit r/politics')},
- {id:'x-r-geopolitics',name:'Reddit r/geopolitics',kind:'Live posts',url:rdu('r/geopolitics'),every:90e3,delay:30900,parse:pReddit('Reddit r/geopolitics')},
- {id:'x-r-bangladesh',name:'Reddit r/bangladesh',kind:'Live posts',url:rdu('r/bangladesh'),every:90e3,delay:33900,parse:pReddit('Reddit r/bangladesh')},
  {id:'crypto',name:'CoinGecko',kind:'Crypto market',market:1,url:'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=12&page=1&sparkline=false&price_change_percentage=1h,24h',every:15e3,delay:200,parse:pMkt,alts:[{url:bnUrl,parse:pBN}]},
  {id:'wiki0',name:'Wikipedia',kind:'Current events (today)',urlf:()=>wikiUrl(0),every:120e3,parse:pWiki(0)},
 ].map(s=>({...s,st:'pending',ev:[],last:0,fails:0,err:'',t:null}));
@@ -1108,19 +1049,16 @@ function pEONET(j){const map={wildfires:['fire','moderate'],severeStorms:['weath
 
 
 async function getJSON(u,xml){if(navigator.onLine===false)throw new Error('no internet connection');const ac=new AbortController(),to=setTimeout(()=>ac.abort(),12e3);try{const r=await fetch(u,{signal:ac.signal,cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);if(xml){const d=new DOMParser().parseFromString(await r.text(),'text/xml');if(d.querySelector('parsererror'))throw new Error('unreadable feed');return d}return await r.json()}finally{clearTimeout(to)}}
-let RDQ=Promise.resolve();
-const RPX=[u=>'https://corsproxy.io/?url='+encodeURIComponent(u),u=>'https://api.allorigins.win/raw?url='+encodeURIComponent(u)];
-async function fetchSrc(s){let first;for(const c of [{url:s.urlf?s.urlf():s.url,parse:s.parse},...(s.alts||[])]){try{const j=await getJSON(c.url);s.cur=c.parse;s.via='direct';return j}catch(e){first=first||e;if(/reddit\.com/.test(c.url)&&(s.fails<2||s.fails%6===0)){const r=await(RDQ=RDQ.catch(()=>{}).then(async()=>{for(const f of RPX){try{await new Promise(z=>setTimeout(z,1500));const j=await getJSON(f(c.url));if(j&&j.data&&j.data.children)return j}catch(_){}}return null}));if(r){s.cur=c.parse;s.via='proxy';return r}}}}throw first}
+async function fetchSrc(s){let first;for(const c of [{url:s.urlf?s.urlf():s.url,parse:s.parse},...(s.alts||[])]){try{const j=await getJSON(c.url);s.cur=c.parse;s.via=c===undefined?'':'direct';return j}catch(e){first=first||e}}throw first}
 const friendly=e=>/HTTP (400|404)/.test(e.message)?'account or feed not found (will retry hourly)':navigator.onLine===false?'no internet connection':e.name==='AbortError'?'timeout':e.name==='TypeError'?'blocked by browser (CORS) or network error'+(S.relay?'; relay also failed':''):e.name==='SyntaxError'?'unexpected response (possibly rate-limited)':e.message;
-const PACE=4,MIN_POLL=60e3,RENDER_GAP=5e3,NEWS_GAP=46e3,BADGE_FIRSTSEEN=30e3,BADGE_PUBLISHED=30e3,BADGE_MAX=2;
 async function poll(s){
  if(s.busy)return;s.busy=1;
  try{const j=await fetchSrc(s);
-  const prev=new Set(s.ev.map(e=>e.id)),was=s.st,nm=s.name+' · '+s.kind;s.ev=(s.cur||s.parse)(j);if(!s.last)s.ev.forEach(e=>S.nf.set(e.id,0));if(s.market||s.ev.length!==prev.size||s.ev.some(e=>!prev.has(e.id)))DV++;const fresh=s.last?s.ev.filter(e=>!prev.has(e.id)):[];s.newN=fresh.length;s.st='ok';s.last=Date.now();s.fails=0;s.err='';s.hide=0;
+  const prev=new Set(s.ev.map(e=>e.id)),was=s.st,nm=s.name+' · '+s.kind;s.ev=(s.cur||s.parse)(j);if(s.market||s.ev.length!==prev.size||s.ev.some(e=>!prev.has(e.id)))DV++;const fresh=s.last?s.ev.filter(e=>!prev.has(e.id)):[];s.newN=fresh.length;s.st='ok';s.last=Date.now();s.fails=0;s.err='';s.hide=0;
    if(fresh.length&&!s.market)logUp(nm,'+'+fresh.length+' new: '+fresh.slice(0,2).map(e=>e.title).join('; ')+(fresh.length>2?' …':''));}
  catch(e){s.st='error';s.fails++;s.err=friendly(e);s.hide=!s.last}
  finally{s.busy=0;}
- const w0=s.hide?(/not found/.test(s.err)?36e5:3e5):s.st==='ok'?Math.max(s.every*PACE,MIN_POLL):Math.min(Math.max(s.every*PACE,MIN_POLL)*2**s.fails,6e5);
+ const w0=s.hide?(/not found/.test(s.err)?36e5:3e5):s.st==='ok'?s.every:Math.min(s.every*2**s.fails,6e5);
  const wait=document.hidden?Math.max(w0*3,45e3):w0;
  clearTimeout(s.t);s.next=wait;s.at=Date.now()+wait;s.t=setTimeout(()=>poll(s),wait);
  refresh();
@@ -1155,8 +1093,6 @@ const NR=ALI.concat(WF.filter(f=>f.pt&&f.n.length>3).map(f=>({re:new RegExp('\\b
 const RC=new Map();
 function regOf(t){if(RC.has(t))return RC.get(t);if(RC.size>500)RC.clear();let best=1e9,r='Global';NR.forEach(x=>{const i=t.search(x.re);if(i>=0&&i<best){best=i;r=x.r}});RC.set(t,r);return r}
 let NEWSR='',NEWSC='';
-// Same list as the original (newest first, no extra controls). Bluesky and Mastodon are each capped at 40 items (even split), and every source at 8, so other sources stay visible
-function mix(a,max){const c=new Map(),t={B:0,M:0},o=[];a.forEach(n=>{const v=c.get(n.src)||0;if(v>=8)return;const l=n.lab||'',k=/BLUESKY/.test(l)?'B':/MASTODON/.test(l)?'M':'';if(k&&t[k]>=40)return;c.set(n.src,v+1);if(k)t[k]++;o.push(n)});return o.slice(0,max)}
 const catCol=c=>/conflict|attack|disaster|accident|terror/i.test(c)?'#ff1e1e':/health|environment|crime|law/i.test(c)?'#ff8a50':'#a07880';
 const nf=new Intl.NumberFormat('en-US',{notation:'compact',maximumFractionDigits:2});
 const fp=v=>v==null?'—':'$'+(+v).toLocaleString('en-US',{maximumFractionDigits:v>=100?2:v>=1?3:6});
@@ -1183,14 +1119,13 @@ function hlCat0(n){if(n.hlcat)return n.hlcat;const t=n.title,k=KW2.find(x=>x[1].
  if(n.kind==='WIKI'){const c=n.cat||'';return/sport/i.test(c)?'sports':/arts|culture/i.test(c)?'hollywood':/science|tech/i.test(c)?'science':/health/i.test(c)?'medical':/conflict|politic|relation|law/i.test(c)?'geo':null}return null}
 const wd=t=>new Set(String(t).toLowerCase().replace(/[^a-z0-9 ]/g,' ').split(/\s+/).filter(w=>w.length>3));
 const ov=(a,b)=>{let i=0;a.forEach(w=>{if(b.has(w))i++});return i};
-function renderNews(){const gk=DV+'|'+NEWSR+'|'+NEWSC+'|'+S.q+'|'+(Date.now()/5e3|0)+'|'+isMob();if(renderNews.gk===gk)return;renderNews.gk=gk;const q=S.q.toLowerCase(),seen=new Set(),nowT=Date.now();
+function renderNews(){const gk=DV+'|'+NEWSR+'|'+NEWSC+'|'+S.q+'|'+(Date.now()/15e3|0)+'|'+isMob();if(renderNews.gk===gk)return;renderNews.gk=gk;const q=S.q.toLowerCase(),seen=new Set(),nowT=Date.now();
  let a=NSRC.filter(s=>!s.market&&!s.gm&&!s.mv).flatMap(s=>s.ev).filter(n=>!/arts|culture|entertain/i.test(n.cat)).map(n=>({...n,region:n.regionHint||regOf(n.title),hc:hlCat(n)}))
   .filter(n=>{const k=n.title.toLowerCase().slice(0,60);if(seen.has(k))return false;seen.add(k);return true})
   .filter(n=>(!NEWSR||n.region===NEWSR)&&(!NEWSC||n.hc===NEWSC)&&(!q||(n.title+n.cat+n.src+n.region).toLowerCase().includes(q))).sort((x,y)=>y.ts-x.ts);
- a.forEach(n=>{if(!S.nf.has(n.id))S.nf.set(n.id,S.nfirst?0:nowT)});S.nf.forEach((v,k)=>{if(!NSRC.some(x=>x.ev.some(y=>y.id===k)))S.nf.delete(k)});S.nfirst=0;
- if(!S.rel){S.rel=new Set;S.relT=0}if(S.rel.size>2e3)S.rel.clear();{const pend=a.filter(n=>S.nf.get(n.id)>0&&!S.rel.has(n.id));if(pend.length&&nowT-S.relT>=NEWS_GAP){pend.forEach(n=>{S.rel.add(n.id);S.nf.set(n.id,nowT)});S.relT=nowT}a=a.filter(n=>!(S.nf.get(n.id)>0)||S.rel.has(n.id))}
- $('#nwc').textContent='';
- const ne=$('#news'),nl=mix(a,isMob()?6:250).map(n=>({n,nwn:(S.nf.get(n.id)>0&&nowT-S.nf.get(n.id)<BADGE_FIRSTSEEN)||(n.kind!=='WIKI'&&nowT-n.ts>=-6e4&&nowT-n.ts<BADGE_PUBLISHED)}));let bc=0;nl.forEach(x=>{if(x.nwn&&++bc>BADGE_MAX)x.nwn=false});const nsig=nl.map(x=>x.n.id+(x.nwn?1:0)).join('|')||('empty'+NSRC.every(x=>x.st!=='ok'));
+ a.forEach(n=>{if(!S.nf.has(n.id))S.nf.set(n.id,S.nfirst?0:nowT)});S.nf.forEach((v,k)=>{if(!NSRC.some(x=>x.ev.some(y=>y.id===k)))S.nf.delete(k)});if(NSRC.every(x=>x.st!=='pending'))S.nfirst=0;
+ $('#nwc').textContent='('+a.length+')';
+ const ne=$('#news'),nl=a.slice(0,isMob()?6:250).map(n=>({n,nwn:S.nf.get(n.id)>0&&nowT-S.nf.get(n.id)<9e4})),nsig=nl.map(x=>x.n.id+(x.nwn?1:0)).join('|')||('empty'+NSRC.every(x=>x.st!=='ok'));
  if(ne._sig!==nsig){ne._sig=nsig;const st=ne.scrollTop;
   ne.innerHTML=nl.length?nl.map(({n,nwn})=>{const an=nwn&&!S.anim.has(n.id);if(an)S.anim.add(n.id);const col=catCol(n.cat),when=n.kind==='WIKI'?new Date(n.day).toUTCString().slice(5,11):fmt(n.ts)+' · <span data-ago="'+n.ts+'">'+ago(n.ts)+'</span>',
    inner=`${nwn?'<b class="nbadge">NEW</b> ':''}<b>${esc(n.region.toUpperCase())}</b> · ${esc(n.hc?HLN[n.hc][0]:n.cat)}<span class="tt">${esc(n.title)}</span><div class="mono">${when} · ${esc(n.src)}${n.hc==='hollywood'||n.hc==='bollywood'?' · not fact-checked':''} · ${n.kind==='WIKI'?'WIKIPEDIA CURRENT EVENTS':(n.lab||'THE GUARDIAN API')}</div>`,cl='nw2'+(nwn?' nw':'')+(an?' an':'');
@@ -1251,12 +1186,15 @@ function renderMore(L){
  const hi=L.filter(e=>e.sev==='critical'||e.sev==='high').sort((a,b)=>b.ts-a.ts).slice(0,10).map(evBtn).join('')||'<p class="lbl" style="padding:10px">No critical or high events.</p>';
  const big=eq.sort((a,b)=>b.m-a.m).slice(0,8).map(x=>evBtn(x.e)).join('')||'<p class="lbl" style="padding:10px">No earthquakes loaded.</p>';
  const md=L.filter(e=>e.id.startsWith('winc:')).sort((a,b)=>b.ts-a.ts).slice(0,12).map(e=>`<tr data-id="${esc(e.id)}" class="clk"><td>${etl(e.title)}</td><td>${esc(e.country)}</td><td class="mono">${new Date(e.ts).toISOString().slice(5,10)}</td></tr>`);
-  const about=`<div class="ab">
-<p><b>REDPULSE</b> is a live dashboard for world news, natural disasters and crypto prices, all in one place.</p>
-<p><b>Sources:</b> USGS, NASA, NOAA, news outlets on Bluesky, RSS feeds, The Guardian, Wikipedia and public posts on Reddit, Mastodon and Lemmy. Social posts are unverified.</p>
-<p><b>Privacy:</b> everything runs in your browser and nothing is saved.</p>
-<p><b>Note:</b> this is a monitoring tool, not an official source. Always confirm important news with official agencies.</p>
-<p style="margin-top:10px;color:#a07880">Made by <b>Tasin</b> · <a href="https://x.com/tasin30" target="_blank" rel="noopener noreferrer" style="color:#ff6b6b">x.com/tasin30</a></p></div>`;
+  const about=`<div class="ab"><p><b>Global alert level</b> is an interface aggregation of loaded events: CRITICAL if any critical event exists, HIGH if 5 or more high events, ELEVATED if any high event, otherwise NORMAL. It is not an official risk rating.</p>
+<p><b>Severity rules.</b> USGS earthquakes: M7+ critical, M6+ high, M4.5+ moderate, below that low. NASA EONET: volcanoes high, storms/fires/floods moderate, other low. NOAA NWS: Extreme critical, Severe high. Wikipedia-derived attack items: high.</p>
+<p><b>Data status.</b> VERIFIED SOURCE = reviewed by the publishing agency. PRELIMINARY = automatic, may be revised. UNVERIFIED = aggregated or media-derived, not confirmed. DEMO / SIMULATED = synthetic sample data shown only when no live source is reachable.</p>
+<p><b>Live sources.</b> USGS (earthquakes), NASA EONET (natural events), NOAA NWS (US severe weather alerts), CoinGecko / Binance (crypto prices) and the news sources listed below. Everything is requested straight from your browser every 15 to 60 seconds, and nothing is saved: no cookies, local storage or database; old items are dropped when sources stop returning them.</p>
+<p><b>Incidents from Wikipedia.</b> Terror, bombing and hijack items are picked from Wikipedia's Current events by keyword and placed at the centre of the country named in the report. Their location is approximate and their time is the report date only.</p>
+<p><b>Top global news</b> shows the newest items as they are published: news-organisation accounts on Bluesky (Reuters, AP, Al Jazeera, NYT, CNN, DW, India Today, WION, NDTV, ABC News Australia and Newsroom NZ), links to WION and India Today shared on Reddit, posts in Reddit's r/worldnews, r/news and r/india, the Mastodon #breakingnews tag, The Guardian's open API (including regional Oceania, Asia cricket, Africa, Latin America, Middle East and polar fallbacks), and Wikipedia's Current events. Reddit and Mastodon posts are public user posts and are not verified; they are labelled as such. X (Twitter) is not included because its data needs a paid, secret API key that cannot be kept safe inside a web page. Regions are guessed from country names in the headline, so some items show as Global.</p>
+<p><b>Time.</b> Source timestamps are kept as published and shown in the zone labelled next to them (toggle UTC / Local in the top bar).</p>
+<p><b>Nothing is saved.</b> No cookies, local storage or server are used; all data lives in memory and disappears when you close the page.</p>
+<p><b>Limits.</b> This is a monitoring interface, not an authority. Media-derived markers can be wrong, duplicated or mis-located. Country shapes use Natural Earth boundaries (India perspective), simplified for speed. Danger zones on the map are a visual aid only. Statistics below follow your current filters and search.</p></div>`;
  $('#more').innerHTML=card('Severity distribution',bars(Object.keys(SEV).map(k=>[SEV[k].i+' '+SEV[k].l,L.filter(e=>e.sev===k).length,SEV[k].c])))+
  card('Event types',bars(cnt(L,e=>e.type).sort((a,b)=>b[1]-a[1]).map(r=>[r[0].toUpperCase(),r[1]])))+
  card('Regions',bars(REGIONS.map(r=>[r,L.filter(e=>e.region===r).length])))+
@@ -1334,7 +1272,7 @@ function render(){
 function notify(e){if(Date.now()-S.lastNote<6e4)return;S.lastNote=Date.now();
  if(S.notify&&window.Notification&&Notification.permission==='granted')new Notification('CRITICAL EVENT DETECTED',{body:e.title+' ('+e.source+')'});
  if(S.sound)try{const a=new AudioContext(),o=a.createOscillator();o.connect(a.destination);o.frequency.value=660;o.onended=()=>a.close();o.start();o.stop(a.currentTime+.25)}catch{}}
-let DV=0,rT=0,dirty=0,lastScrollT=0;const refresh=()=>{if(rT)return;rT=setTimeout(()=>{rT=0;render()},RENDER_GAP)};
+let DV=0,rT=0,dirty=0,lastScrollT=0;const refresh=()=>{if(rT)return;rT=setTimeout(()=>{rT=0;render()},600)};
 
 // UI wiring (single set of listeners)
 const TL={all:'All types',terror:'Terror attacks',blast:'Blasts',hijack:'Hijacks',earthquake:'Earthquakes',weather:'Weather',fire:'Fires',flood:'Floods',volcanic:'Volcanoes',other:'Other'};
@@ -1349,7 +1287,7 @@ let dt;$('#q').oninput=e=>{clearTimeout(dt);dt=setTimeout(()=>{S.q=e.target.valu
 const tog=(id,k,txt,after)=>{$(id).onclick=function(){S[k]=!S[k];this.setAttribute('aria-pressed',S[k]);if(txt)this.textContent=txt(S[k]);after&&after();render()}};
 tog('#zn','zones');
 const T1=setInterval(()=>{if(document.hidden)return;const n=new Date();$('#utc').textContent=n.toISOString().slice(11,19);$('#loc').textContent=n.toLocaleTimeString([], {hour12:false})},1000);
-const T2=setInterval(render,10e3),T3=setInterval(()=>document.hidden||document.querySelectorAll('[data-ago]').forEach(x=>{x.textContent=ago(+x.dataset.ago)}),5e3);
+const T2=setInterval(render,30e3),T3=setInterval(()=>document.hidden||document.querySelectorAll('[data-ago]').forEach(x=>{x.textContent=ago(+x.dataset.ago)}),5e3);
 addEventListener('online',()=>[...SRC,...NSRC].forEach(x=>{clearTimeout(x.t);setTimeout(()=>poll(x),x.delay||0)}));addEventListener('offline',render);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(dirty){dirty=0;render()}[...SRC,...NSRC].forEach(x=>{clearTimeout(x.t);setTimeout(()=>poll(x),x.delay||0)})}});
 addEventListener('pagehide',()=>{clearInterval(T1);clearInterval(T2);clearInterval(T3);clearTimeout(rT);RO&&RO.disconnect();[...SRC,...NSRC].forEach(x=>clearTimeout(x.t))}); // refresh relative times and source countdowns
