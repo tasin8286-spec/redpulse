@@ -1241,7 +1241,7 @@ function render(){
  if(CC.size>1000)CC.clear();
  // feed
  const nn=SRC.reduce((a,x)=>a+(x.newN||0),0);$('#cnt').textContent='('+list.length+')'+(nn?' +'+nn+' new':'');
- const fe=$('#feed'),fl=list.slice(0,isMob()?6:120).map(e=>({e,nw:S.fs.get(e.id)>0&&now-S.fs.get(e.id)<6e4})),fsig=fl.map(x=>x.e.id+(x.nw?1:0)).join('|')||'empty';
+ const fe=$('#feed'),fl=list.slice(0,isMob()?6:120).map(e=>({e,nw:S.fs.get(e.id)>0&&now-S.fs.get(e.id)<4e4})),fsig=fl.map(x=>x.e.id+(x.nw?1:0)).join('|')||'empty';
  if(fe._sig!==fsig){fe._sig=fsig;const st=fe.scrollTop;
   fe.innerHTML=fl.length?fl.map(({e,nw})=>{const c=SEV[e.sev],an=nw&&!S.anim.has(e.id);if(an)S.anim.add(e.id);
    return`<button class="ev${nw?' nw':''}${an?' an':''}" style="--c:${c.c}" data-id="${esc(e.id)}"><b>${c.i} ${c.l}</b> · ${esc(e.type.toUpperCase())}<br>${etl(e.title)}<div class="mono">${fmt(e.ts)} · <span data-ago="${e.ts}">${ago(e.ts)}</span> · ${esc(e.source)} · ${esc(e.status)}</div></button>`}).join(''):'<p class="lbl" style="padding:14px">No events in this time range or filter. Widen the time range above.</p>';
