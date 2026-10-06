@@ -1112,6 +1112,7 @@ let RDQ=Promise.resolve();
 const RPX=[u=>'https://corsproxy.io/?url='+encodeURIComponent(u),u=>'https://api.allorigins.win/raw?url='+encodeURIComponent(u)];
 async function fetchSrc(s){let first;for(const c of [{url:s.urlf?s.urlf():s.url,parse:s.parse},...(s.alts||[])]){try{const j=await getJSON(c.url);s.cur=c.parse;s.via='direct';return j}catch(e){first=first||e;if(/reddit\.com/.test(c.url)&&(s.fails<2||s.fails%6===0)){const r=await(RDQ=RDQ.catch(()=>{}).then(async()=>{for(const f of RPX){try{await new Promise(z=>setTimeout(z,1500));const j=await getJSON(f(c.url));if(j&&j.data&&j.data.children)return j}catch(_){}}return null}));if(r){s.cur=c.parse;s.via='proxy';return r}}}}throw first}
 const friendly=e=>/HTTP (400|404)/.test(e.message)?'account or feed not found (will retry hourly)':navigator.onLine===false?'no internet connection':e.name==='AbortError'?'timeout':e.name==='TypeError'?'blocked by browser (CORS) or network error'+(S.relay?'; relay also failed':''):e.name==='SyntaxError'?'unexpected response (possibly rate-limited)':e.message;
+const PACE=4,MIN_POLL=60e3,RENDER_GAP=5e3,BADGE_FIRSTSEEN=2*6e4,BADGE_PUBLISHED=3*6e4,BADGE_MAX=5;
 async function poll(s){
  if(s.busy)return;s.busy=1;
  try{const j=await fetchSrc(s);
@@ -1119,7 +1120,7 @@ async function poll(s){
    if(fresh.length&&!s.market)logUp(nm,'+'+fresh.length+' new: '+fresh.slice(0,2).map(e=>e.title).join('; ')+(fresh.length>2?' …':''));}
  catch(e){s.st='error';s.fails++;s.err=friendly(e);s.hide=!s.last}
  finally{s.busy=0;}
- const w0=s.hide?(/not found/.test(s.err)?36e5:3e5):s.st==='ok'?s.every:Math.min(s.every*2**s.fails,6e5);
+ const w0=s.hide?(/not found/.test(s.err)?36e5:3e5):s.st==='ok'?Math.max(s.every*PACE,MIN_POLL):Math.min(Math.max(s.every*PACE,MIN_POLL)*2**s.fails,6e5);
  const wait=document.hidden?Math.max(w0*3,45e3):w0;
  clearTimeout(s.t);s.next=wait;s.at=Date.now()+wait;s.t=setTimeout(()=>poll(s),wait);
  refresh();
@@ -1188,7 +1189,7 @@ function renderNews(){const gk=DV+'|'+NEWSR+'|'+NEWSC+'|'+S.q+'|'+(Date.now()/15
   .filter(n=>(!NEWSR||n.region===NEWSR)&&(!NEWSC||n.hc===NEWSC)&&(!q||(n.title+n.cat+n.src+n.region).toLowerCase().includes(q))).sort((x,y)=>y.ts-x.ts);
  a.forEach(n=>{if(!S.nf.has(n.id))S.nf.set(n.id,S.nfirst?0:nowT)});S.nf.forEach((v,k)=>{if(!NSRC.some(x=>x.ev.some(y=>y.id===k)))S.nf.delete(k)});S.nfirst=0;
  $('#nwc').textContent='';
- const ne=$('#news'),nl=mix(a,isMob()?6:250).map(n=>({n,nwn:(S.nf.get(n.id)>0&&nowT-S.nf.get(n.id)<9e4)||(n.kind!=='WIKI'&&nowT-n.ts>=-6e4&&nowT-n.ts<10*6e4)})),nsig=nl.map(x=>x.n.id+(x.nwn?1:0)).join('|')||('empty'+NSRC.every(x=>x.st!=='ok'));
+ const ne=$('#news'),nl=mix(a,isMob()?6:250).map(n=>({n,nwn:(S.nf.get(n.id)>0&&nowT-S.nf.get(n.id)<BADGE_FIRSTSEEN)||(n.kind!=='WIKI'&&nowT-n.ts>=-6e4&&nowT-n.ts<BADGE_PUBLISHED)}));let bc=0;nl.forEach(x=>{if(x.nwn&&++bc>BADGE_MAX)x.nwn=false});const nsig=nl.map(x=>x.n.id+(x.nwn?1:0)).join('|')||('empty'+NSRC.every(x=>x.st!=='ok'));
  if(ne._sig!==nsig){ne._sig=nsig;const st=ne.scrollTop;
   ne.innerHTML=nl.length?nl.map(({n,nwn})=>{const an=nwn&&!S.anim.has(n.id);if(an)S.anim.add(n.id);const col=catCol(n.cat),when=n.kind==='WIKI'?new Date(n.day).toUTCString().slice(5,11):fmt(n.ts)+' · <span data-ago="'+n.ts+'">'+ago(n.ts)+'</span>',
    inner=`${nwn?'<b class="nbadge">NEW</b> ':''}<b>${esc(n.region.toUpperCase())}</b> · ${esc(n.hc?HLN[n.hc][0]:n.cat)}<span class="tt">${esc(n.title)}</span><div class="mono">${when} · ${esc(n.src)}${n.hc==='hollywood'||n.hc==='bollywood'?' · not fact-checked':''} · ${n.kind==='WIKI'?'WIKIPEDIA CURRENT EVENTS':(n.lab||'THE GUARDIAN API')}</div>`,cl='nw2'+(nwn?' nw':'')+(an?' an':'');
@@ -1332,7 +1333,7 @@ function render(){
 function notify(e){if(Date.now()-S.lastNote<6e4)return;S.lastNote=Date.now();
  if(S.notify&&window.Notification&&Notification.permission==='granted')new Notification('CRITICAL EVENT DETECTED',{body:e.title+' ('+e.source+')'});
  if(S.sound)try{const a=new AudioContext(),o=a.createOscillator();o.connect(a.destination);o.frequency.value=660;o.onended=()=>a.close();o.start();o.stop(a.currentTime+.25)}catch{}}
-let DV=0,rT=0,dirty=0,lastScrollT=0;const refresh=()=>{if(rT)return;rT=setTimeout(()=>{rT=0;render()},600)};
+let DV=0,rT=0,dirty=0,lastScrollT=0;const refresh=()=>{if(rT)return;rT=setTimeout(()=>{rT=0;render()},RENDER_GAP)};
 
 // UI wiring (single set of listeners)
 const TL={all:'All types',terror:'Terror attacks',blast:'Blasts',hijack:'Hijacks',earthquake:'Earthquakes',weather:'Weather',fire:'Fires',flood:'Floods',volcanic:'Volcanoes',other:'Other'};
