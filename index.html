@@ -932,8 +932,6 @@ const pBsky=(name,hc)=>j=>(j.feed||[]).filter(f=>!f.reason&&f.post&&f.post.recor
  return{id:'bs:'+p.uri,kind:'SOCIAL',cat:'News post',title:t.slice(0,240),src:name,hlcat:hc,lab:'NEWS ORG POST · BLUESKY',url:link,ts:Date.parse(r.createdAt)||Date.now(),day:0}}).filter(n=>n.title.length>10&&n.url);
 const bsky=(h,n=15)=>'https://public.api.bsky.app/xrpc/app.bsky.feed.getAuthorFeed?actor='+h+'&limit='+n+'&filter=posts_no_replies';
 const pGuardian=j=>((j.response||{}).results||[]).map(a=>({id:'gu:'+a.id,kind:'RSS',cat:a.sectionName||'World',title:String(a.webTitle).slice(0,240),src:'The Guardian',url:a.webUrl,ts:Date.parse(a.webPublicationDate)||Date.now(),day:0}));
-const hint=(parse,regionHint,srcName,hlcat)=>j=>parse(j).map(n=>({...n,regionHint,src:srcName||n.src,hlcat:hlcat||n.hlcat}));
-const guardianQ=(q,n=20)=>'https://content.guardianapis.com/search?order-by=newest&page-size='+n+'&api-key=test&q='+encodeURIComponent(q);
 const PX=new Map();
 const pMkt=j=>(Array.isArray(j)?j:[]).slice(0,12).map(c=>{const sym=String(c.symbol||'').toUpperCase(),old=PX.get(sym);PX.set(sym,c.current_price);
  return{id:'c:'+sym,market:1,sym,name:c.name,price:c.current_price,ch1:c.price_change_percentage_1h_in_currency,ch24:c.price_change_percentage_24h,cap:c.market_cap,vol:c.total_volume,dir:old==null?0:Math.sign(c.current_price-old),ts:Date.parse(c.last_updated)||Date.now()}});
@@ -1015,24 +1013,7 @@ const NSRC=[
  {id:'r-india',name:'Reddit r/india',kind:'Live posts',url:rdu('r/india'),every:60e3,delay:28500,parse:pReddit('Reddit r/india')},
  {id:'mastodon',name:'Mastodon',kind:'#breakingnews posts',url:'https://mastodon.social/api/v1/timelines/tag/breakingnews?limit=20',every:30e3,delay:5000,parse:pMasto},
  {id:'b-dw',name:'DW News',kind:'Live news posts',url:bsky('dw.com'),every:15e3,delay:3300,parse:pBsky('DW News')},
- {id:'guardian',name:'The Guardian',kind:'World news API',url:'https://content.guardianapis.com/search?section=world&order-by=newest&page-size=30&api-key=test',every:45e3,delay:3900,parse:pGuardian},
- // Regional fallbacks: dedicated free feeds prevent region filters from going empty when a headline lacks a country name.
- {id:'gu-aus',name:'Guardian Australia',kind:'Oceania news',url:'https://content.guardianapis.com/search?section=australia-news&order-by=newest&page-size=30&api-key=test',every:75e3,delay:4300,parse:hint(pGuardian,'Oceania','The Guardian · Australia')},
- {id:'b-abcau',name:'ABC News Australia',kind:'Oceania live news',url:bsky('news.abc.net.au',50),every:45e3,delay:4700,parse:hint(pBsky('ABC News Australia'),'Oceania')},
- {id:'b-newsroomnz',name:'Newsroom NZ',kind:'New Zealand news',url:bsky('newsroom.co.nz',40),every:75e3,delay:5100,parse:hint(pBsky('Newsroom NZ'),'Oceania')},
- {id:'gu-nz',name:'Guardian New Zealand',kind:'New Zealand news',urlf:()=>guardianQ('New Zealand',20),every:90e3,delay:5500,parse:hint(pGuardian,'Oceania','The Guardian · New Zealand')},
- {id:'gu-pacific',name:'Guardian Pacific',kind:'Pacific Islands news',urlf:()=>guardianQ('Pacific islands',20),every:120e3,delay:5900,parse:hint(pGuardian,'Oceania','The Guardian · Pacific')},
- // Asia cricket fallbacks from Guardian searches; each is explicitly tagged Asia + Sports.
- {id:'gu-cricket-india',name:'Guardian · India cricket',kind:'Asia cricket',urlf:()=>guardianQ('India cricket',15),every:120e3,delay:6300,parse:hint(pGuardian,'Asia','The Guardian · India cricket','sports')},
- {id:'gu-cricket-pak',name:'Guardian · Pakistan cricket',kind:'Asia cricket',urlf:()=>guardianQ('Pakistan cricket',15),every:120e3,delay:6700,parse:hint(pGuardian,'Asia','The Guardian · Pakistan cricket','sports')},
- {id:'gu-cricket-bd',name:'Guardian · Bangladesh cricket',kind:'Asia cricket',urlf:()=>guardianQ('Bangladesh cricket',15),every:120e3,delay:7100,parse:hint(pGuardian,'Asia','The Guardian · Bangladesh cricket','sports')},
- {id:'gu-cricket-sl',name:'Guardian · Sri Lanka cricket',kind:'Asia cricket',urlf:()=>guardianQ('Sri Lanka cricket',15),every:120e3,delay:7500,parse:hint(pGuardian,'Asia','The Guardian · Sri Lanka cricket','sports')},
- {id:'gu-cricket-afg',name:'Guardian · Afghanistan cricket',kind:'Asia cricket',urlf:()=>guardianQ('Afghanistan cricket',15),every:120e3,delay:7900,parse:hint(pGuardian,'Asia','The Guardian · Afghanistan cricket','sports')},
- // Extra free Guardian fallbacks for regions that otherwise depend mainly on headline text classification.
- {id:'gu-africa',name:'Guardian Africa',kind:'Africa news',urlf:()=>guardianQ('Africa',25),every:120e3,delay:8300,parse:hint(pGuardian,'Africa','The Guardian · Africa')},
- {id:'gu-latam',name:'Guardian Latin America',kind:'South America news',urlf:()=>guardianQ('Brazil OR Argentina OR Chile OR Colombia OR Peru',25),every:120e3,delay:8700,parse:hint(pGuardian,'South America','The Guardian · Latin America')},
- {id:'gu-mideast',name:'Guardian Middle East',kind:'Middle East news',urlf:()=>guardianQ('Middle East',25),every:120e3,delay:9100,parse:hint(pGuardian,'Middle East','The Guardian · Middle East')},
- {id:'gu-arctic',name:'Guardian Polar',kind:'Arctic / Antarctic news',urlf:()=>guardianQ('Arctic Antarctic',20),every:180e3,delay:9500,parse:hint(pGuardian,'Arctic / Antarctic','The Guardian · Polar')},
+ {id:'guardian',name:'The Guardian',kind:'World news API',url:'https://content.guardianapis.com/search?section=world&order-by=newest&page-size=20&api-key=test',every:30e3,delay:3900,parse:pGuardian},
  {id:'crypto',name:'CoinGecko',kind:'Crypto market',market:1,url:'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=12&page=1&sparkline=false&price_change_percentage=1h,24h',every:15e3,delay:200,parse:pMkt,alts:[{url:bnUrl,parse:pBN}]},
  {id:'wiki0',name:'Wikipedia',kind:'Current events (today)',urlf:()=>wikiUrl(0),every:120e3,parse:pWiki(0)},
 ].map(s=>({...s,st:'pending',ev:[],last:0,fails:0,err:'',t:null}));
@@ -1088,7 +1069,7 @@ const ringC=r=>{let A=0,x=0,y=0;for(let i=0,j=r.length-1;i<r.length;j=i++){const
 const WF=WORLD.features.filter(f=>f.geometry).map(f=>{const polys=f.geometry.type==='Polygon'?[f.geometry.coordinates]:f.geometry.coordinates;let b=[180,90,-180,-90],big=0,pt=null;
  polys.forEach(p=>{let q=[180,90,-180,-90];p[0].forEach(c=>{q=[Math.min(q[0],c[0]),Math.min(q[1],c[1]),Math.max(q[2],c[0]),Math.max(q[3],c[1])]});b=[Math.min(b[0],q[0]),Math.min(b[1],q[1]),Math.max(b[2],q[2]),Math.max(b[3],q[3])];const ar=(q[2]-q[0])*(q[3]-q[1]);if(ar>=big){big=ar;pt=ringC(p[0])}});return{n:f.properties.name,polys,b,pt,size:big}});
 const inRing=(r,x,y)=>{let i=false;for(let a=0,j=r.length-1;a<r.length;j=a++){const xi=r[a][0],yi=r[a][1],xj=r[j][0],yj=r[j][1];if((yi>y)!==(yj>y)&&x<(xj-xi)*(y-yi)/(yj-yi)+xi)i=!i}return i};
-const ALI=[[/Gaza|Hamas|Hezbollah|West Bank|Tehran|Israel|Iran|Lebanon|Syria|Jordan|Yemen/,'Middle East'],[/Russia|Ukraine|Moscow|Kremlin|Kyiv|Kharkiv|Zelensky|EU|European Union/,'Europe'],[/Washington|U\.S\.|\bUS\b|Trump|Congress|Canada|Mexico/,'North America'],[/Beijing|Taipei|Xi Jinping|India|Pakistan|Bangladesh|Sri Lanka|Afghanistan|Nepal|Japan|Korea|Indonesia|Philippines|Thailand|Vietnam|IPL|BPL|PSL/,'Asia'],[/Australia|Australian|Sydney|Melbourne|Canberra|New Zealand|Aotearoa|Auckland|Wellington|Fiji|Papua New Guinea|Samoa|Tonga|Pacific Islands?/,'Oceania'],[/Brazil|Argentina|Chile|Colombia|Peru|Venezuela|Bolivia|Ecuador|Uruguay|Paraguay/,'South America'],[/Arctic|Antarctic|Antarctica|Greenland|South Pole|North Pole/,'Arctic / Antarctic']].map(x=>({re:x[0],r:x[1]}));
+const ALI=[[/Gaza|Hamas|Hezbollah|West Bank|Tehran/,'Middle East'],[/Russia|Ukraine|Moscow|Kremlin|Kyiv|Kharkiv|Zelensky/,'Europe'],[/Washington|U\.S\.|\bUS\b|Trump|Congress/,'North America'],[/Beijing|Taipei|Xi Jinping/,'Asia']].map(x=>({re:x[0],r:x[1]}));
 const NR=ALI.concat(WF.filter(f=>f.pt&&f.n.length>3).map(f=>({re:new RegExp('\\b'+f.n.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b'),r:region(f.pt[0],f.pt[1]),n:f.n,pt:f.pt})));
 const RC=new Map();
 function regOf(t){if(RC.has(t))return RC.get(t);if(RC.size>500)RC.clear();let best=1e9,r='Global';NR.forEach(x=>{const i=t.search(x.re);if(i>=0&&i<best){best=i;r=x.r}});RC.set(t,r);return r}
@@ -1120,7 +1101,7 @@ function hlCat0(n){if(n.hlcat)return n.hlcat;const t=n.title,k=KW2.find(x=>x[1].
 const wd=t=>new Set(String(t).toLowerCase().replace(/[^a-z0-9 ]/g,' ').split(/\s+/).filter(w=>w.length>3));
 const ov=(a,b)=>{let i=0;a.forEach(w=>{if(b.has(w))i++});return i};
 function renderNews(){const gk=DV+'|'+NEWSR+'|'+NEWSC+'|'+S.q+'|'+(Date.now()/15e3|0)+'|'+isMob();if(renderNews.gk===gk)return;renderNews.gk=gk;const q=S.q.toLowerCase(),seen=new Set(),nowT=Date.now();
- let a=NSRC.filter(s=>!s.market&&!s.gm&&!s.mv).flatMap(s=>s.ev).filter(n=>!/arts|culture|entertain/i.test(n.cat)).map(n=>({...n,region:n.regionHint||regOf(n.title),hc:hlCat(n)}))
+ let a=NSRC.filter(s=>!s.market&&!s.gm&&!s.mv).flatMap(s=>s.ev).filter(n=>!/sport|arts|culture|entertain/i.test(n.cat)).map(n=>({...n,region:regOf(n.title),hc:hlCat(n)}))
   .filter(n=>{const k=n.title.toLowerCase().slice(0,60);if(seen.has(k))return false;seen.add(k);return true})
   .filter(n=>(!NEWSR||n.region===NEWSR)&&(!NEWSC||n.hc===NEWSC)&&(!q||(n.title+n.cat+n.src+n.region).toLowerCase().includes(q))).sort((x,y)=>y.ts-x.ts);
  a.forEach(n=>{if(!S.nf.has(n.id))S.nf.set(n.id,S.nfirst?0:nowT)});S.nf.forEach((v,k)=>{if(!NSRC.some(x=>x.ev.some(y=>y.id===k)))S.nf.delete(k)});if(NSRC.every(x=>x.st!=='pending'))S.nfirst=0;
@@ -1191,7 +1172,7 @@ function renderMore(L){
 <p><b>Data status.</b> VERIFIED SOURCE = reviewed by the publishing agency. PRELIMINARY = automatic, may be revised. UNVERIFIED = aggregated or media-derived, not confirmed. DEMO / SIMULATED = synthetic sample data shown only when no live source is reachable.</p>
 <p><b>Live sources.</b> USGS (earthquakes), NASA EONET (natural events), NOAA NWS (US severe weather alerts), CoinGecko / Binance (crypto prices) and the news sources listed below. Everything is requested straight from your browser every 15 to 60 seconds, and nothing is saved: no cookies, local storage or database; old items are dropped when sources stop returning them.</p>
 <p><b>Incidents from Wikipedia.</b> Terror, bombing and hijack items are picked from Wikipedia's Current events by keyword and placed at the centre of the country named in the report. Their location is approximate and their time is the report date only.</p>
-<p><b>Top global news</b> shows the newest items as they are published: news-organisation accounts on Bluesky (Reuters, AP, Al Jazeera, NYT, CNN, DW, India Today, WION, NDTV, ABC News Australia and Newsroom NZ), links to WION and India Today shared on Reddit, posts in Reddit's r/worldnews, r/news and r/india, the Mastodon #breakingnews tag, The Guardian's open API (including regional Oceania, Asia cricket, Africa, Latin America, Middle East and polar fallbacks), and Wikipedia's Current events. Reddit and Mastodon posts are public user posts and are not verified; they are labelled as such. X (Twitter) is not included because its data needs a paid, secret API key that cannot be kept safe inside a web page. Regions are guessed from country names in the headline, so some items show as Global.</p>
+<p><b>Top global news</b> shows the newest items as they are published: news-organisation accounts on Bluesky (Reuters, AP, Al Jazeera, NYT, CNN, DW, India Today, WION, NDTV), links to WION and India Today shared on Reddit, posts in Reddit's r/worldnews, r/news and r/india, the Mastodon #breakingnews tag, The Guardian's open API, and Wikipedia's Current events. Reddit and Mastodon posts are public user posts and are not verified; they are labelled as such. X (Twitter) is not included because its data needs a paid, secret API key that cannot be kept safe inside a web page. Regions are guessed from country names in the headline, so some items show as Global.</p>
 <p><b>Time.</b> Source timestamps are kept as published and shown in the zone labelled next to them (toggle UTC / Local in the top bar).</p>
 <p><b>Nothing is saved.</b> No cookies, local storage or server are used; all data lives in memory and disappears when you close the page.</p>
 <p><b>Limits.</b> This is a monitoring interface, not an authority. Media-derived markers can be wrong, duplicated or mis-located. Country shapes use Natural Earth boundaries (India perspective), simplified for speed. Danger zones on the map are a visual aid only. Statistics below follow your current filters and search.</p></div>`;
@@ -1241,7 +1222,7 @@ function render(){
  if(CC.size>1000)CC.clear();
  // feed
  const nn=SRC.reduce((a,x)=>a+(x.newN||0),0);$('#cnt').textContent='('+list.length+')'+(nn?' +'+nn+' new':'');
- const fe=$('#feed'),fl=list.slice(0,isMob()?6:120).map(e=>({e,nw:S.fs.get(e.id)>0&&now-S.fs.get(e.id)<4e4})),fsig=fl.map(x=>x.e.id+(x.nw?1:0)).join('|')||'empty';
+ const fe=$('#feed'),fl=list.slice(0,isMob()?6:120).map(e=>({e,nw:S.fs.get(e.id)>0&&now-S.fs.get(e.id)<6e4})),fsig=fl.map(x=>x.e.id+(x.nw?1:0)).join('|')||'empty';
  if(fe._sig!==fsig){fe._sig=fsig;const st=fe.scrollTop;
   fe.innerHTML=fl.length?fl.map(({e,nw})=>{const c=SEV[e.sev],an=nw&&!S.anim.has(e.id);if(an)S.anim.add(e.id);
    return`<button class="ev${nw?' nw':''}${an?' an':''}" style="--c:${c.c}" data-id="${esc(e.id)}"><b>${c.i} ${c.l}</b> · ${esc(e.type.toUpperCase())}<br>${etl(e.title)}<div class="mono">${fmt(e.ts)} · <span data-ago="${e.ts}">${ago(e.ts)}</span> · ${esc(e.source)} · ${esc(e.status)}</div></button>`}).join(''):'<p class="lbl" style="padding:14px">No events in this time range or filter. Widen the time range above.</p>';
