@@ -923,8 +923,8 @@ const pWiki=d=>j=>{const html=j&&j.parse&&j.parse.text&&j.parse.text['*'];if(!ht
  const doc=new DOMParser().parseFromString(html,'text/html'),root=doc.querySelector('.current-events-content')||doc.body,day=new Date(Date.now()-d*864e5),dayMs=Date.UTC(day.getUTCFullYear(),day.getUTCMonth(),day.getUTCDate()),out=[];let cat='Top story',k=0;
  const walk=el=>{for(const c of el.children){const tg=c.tagName;
   if(tg==='UL'){c.querySelectorAll('li').forEach(li=>{if(li.querySelector('ul'))return;const t=li.textContent.replace(/\s+/g,' ').trim();if(t.length<25)return;
-   const a=li.querySelector('a.external,a[href^="http"]'),h=a&&a.getAttribute('href'),m=t.match(/\(([^()]*)\)\s*$/);
-   out.push({id:'wiki:'+d+':'+t.slice(0,70),kind:'WIKI',cat,title:t.replace(/\s*\([^()]*\)\s*$/,'').slice(0,300),src:m?m[1]:'Wikipedia',url:h&&/^https?:\/\//.test(h)?h:'',ts:dayMs+Math.max(0,999-k++),day:dayMs})})}
+   const a=li.querySelector('a.external,a[href^="http"]'),h=a&&a.getAttribute('href'),wa=li.querySelector('a[href^="/wiki/"]'),wh=wa&&wa.getAttribute('href'),m=t.match(/\(([^()]*)\)\s*$/);
+   out.push({id:'wiki:'+d+':'+t.slice(0,70),kind:'WIKI',cat,title:t.replace(/\s*\([^()]*\)\s*$/,'').slice(0,300),src:m?m[1]:'Wikipedia',url:h&&/^https?:\/\//.test(h)?h:'',wikiPage:wh&&/^\/wiki\//.test(wh)?decodeURIComponent(wh.slice(6).split('#')[0]):'',ts:dayMs+Math.max(0,999-k++),day:dayMs})})}
   else if((tg==='P'||tg==='DL'||/^H[2-6]$/.test(tg))&&!c.querySelector('li')&&c.textContent.trim().length<70){cat=c.textContent.trim()||cat}
   else if(tg==='DIV')walk(c)}};
  walk(root);return out};
@@ -1048,11 +1048,14 @@ const online=()=>SRC.filter(s=>s.st==='ok').length;
 
 const KW=/bomb|explosion|blast|hijack|terror|suicide|shooting|gunmen|militants?|massacre|stabbing|attack/i;
 let incK=-1,incV=[];
+const INC_DATE=new Map();
+function wikiIncidentDate(page,fallback){if(!page||INC_DATE.has(page))return Promise.resolve(INC_DATE.get(page)||fallback);return fetch('https://en.wikipedia.org/w/api.php?'+new URLSearchParams({action:'parse',page,prop:'text',format:'json',origin:'*'})).then(r=>r.json()).then(j=>{const html=j&&j.parse&&j.parse.text&&j.parse.text['*'];if(!html)throw 0;const d=new DOMParser().parseFromString(html,'text/html');let row=[...d.querySelectorAll('table.infobox tr')].find(tr=>/^date$/i.test((tr.querySelector('th')||{}).textContent?.trim()||''));let raw=row?.querySelector('td')?.textContent?.replace(/\[[^\]]*\]/g,'').replace(/\s+/g,' ').trim()||'';let m=raw.match(/\b(\d{1,2})[ -](January|February|March|April|May|June|July|August|September|October|November|December)[ ,]+(\d{4})\b/i)||raw.match(/\b(January|February|March|April|May|June|July|August|September|October|November|December)[ -](\d{1,2}),[ ]*(\d{4})\b/i);let iso='';if(m){if(/^\d/.test(m[1]))iso=Date.UTC(+m[3],MON.indexOf(m[2][0].toUpperCase()+m[2].slice(1).toLowerCase()),+m[1]);else iso=Date.UTC(+m[3],MON.indexOf(m[1][0].toUpperCase()+m[1].slice(1).toLowerCase()),+m[2]);}if(!iso)iso=fallback;INC_DATE.set(page,iso);return iso}).catch(()=>{INC_DATE.set(page,fallback);return fallback})}
+function hydrateIncidentDates(){const jobs=[];NSRC.forEach(s=>s.ev.forEach(n=>{if(n.kind==='WIKI'&&KW.test(n.title)&&!/cyber/i.test(n.title)&&/armed|attack|crime|law|disaster|accident|terror/i.test(n.cat)&&n.wikiPage&&!INC_DATE.has(n.wikiPage))jobs.push(wikiIncidentDate(n.wikiPage,n.day))}));if(jobs.length)Promise.allSettled(jobs).then(()=>{incK=-1;render()})}
 function incidents(){if(incK===DV)return incV;incK=DV;return incV=incidents0()}
 function incidents0(){const out=[];NSRC.forEach(s=>s.ev.forEach(n=>{if(n.kind!=='WIKI'||!KW.test(n.title)||/cyber/i.test(n.title)||!/armed|attack|crime|law|disaster|accident|terror/i.test(n.cat))return;
  let best=1e9,loc=null;NR.forEach(x=>{if(!x.pt)return;const i=n.title.search(x.re);if(i>=0&&i<best){best=i;loc=x}});if(!loc)return;
  const t=/hijack/i.test(n.title)?'hijack':/bomb|explosion|blast/i.test(n.title)?'blast':'terror';
- out.push({id:'winc:'+n.id,type:t,title:n.title.slice(0,120),sev:'high',lat:loc.pt[0],lon:loc.pt[1],country:loc.n,ts:n.day,upd:n.day,source:'Wikipedia Current events · '+n.src,url:n.url||'https://en.wikipedia.org/wiki/Portal:Current_events',status:'UNVERIFIED · APPROXIMATE LOCATION',desc:n.title+' · Marker is the centre of the country named in the report, not the incident site. Time is the report date only (UTC day).'})}));return out}
+ out.push({id:'winc:'+n.id,type:t,title:n.title.slice(0,120),sev:'high',lat:loc.pt[0],lon:loc.pt[1],country:loc.n,ts:INC_DATE.get(n.wikiPage)||n.day,upd:INC_DATE.get(n.wikiPage)||n.day,source:'Wikipedia Current events · '+n.src,url:n.url||'https://en.wikipedia.org/wiki/Portal:Current_events',status:'UNVERIFIED · APPROXIMATE LOCATION',desc:n.title+' · Marker is the centre of the country named in the report, not the incident site. Date is taken from the linked Wikipedia incident article when available; otherwise it falls back to the Current Events report date.'})}));return out}
 const events=()=>{const m=new Map();SRC.flatMap(s=>s.ev).concat(incidents()).forEach(e=>m.set(e.id,e));return[...m.values()]};
 
 function visible(all){const q=S.q.toLowerCase();let a=all.filter(e=>(S.type==='all'||e.type===S.type)&&(!S.sev||SEV[e.sev].r>=SEV[S.sev].r)&&(!S.region||e.region===S.region)&&(!S.rng||e.ts>Date.now()-S.rng)&&
@@ -1106,9 +1109,9 @@ function renderNews(){const gk=DV+'|'+NEWSR+'|'+NEWSC+'|'+S.q+'|'+(Date.now()/15
   .filter(n=>(!NEWSR||n.region===NEWSR)&&(!NEWSC||n.hc===NEWSC)&&(!q||(n.title+n.cat+n.src+n.region).toLowerCase().includes(q))).sort((x,y)=>y.ts-x.ts);
  a.forEach(n=>{if(!S.nf.has(n.id))S.nf.set(n.id,S.nfirst?0:nowT)});S.nf.forEach((v,k)=>{if(!NSRC.some(x=>x.ev.some(y=>y.id===k)))S.nf.delete(k)});if(NSRC.every(x=>x.st!=='pending'))S.nfirst=0;
  $('#nwc').textContent='('+a.length+')';
- const ne=$('#news'),nl=a.slice(0,isMob()?6:250).map(n=>({n,nwn:S.nf.get(n.id)>0&&nowT-S.nf.get(n.id)<9e4})),nsig=nl.map(x=>x.n.id+(x.nwn?1:0)).join('|')||('empty'+NSRC.every(x=>x.st!=='ok'));
+ const ne=$('#news'),BADGE_MS=9e4,nl=a.slice(0,isMob()?6:250).map(n=>({n,nwn:S.nf.get(n.id)>0&&nowT-S.nf.get(n.id)<BADGE_MS})),nsig=nl.map(x=>x.n.id+(x.nwn?1:0)).join('|')||('empty'+NSRC.every(x=>x.st!=='ok'));
  if(ne._sig!==nsig){ne._sig=nsig;const st=ne.scrollTop;
-  ne.innerHTML=nl.length?nl.map(({n,nwn})=>{const an=nwn&&!S.anim.has(n.id);if(an)S.anim.add(n.id);const col=catCol(n.cat),when=n.kind==='WIKI'?new Date(n.day).toUTCString().slice(5,11):fmt(n.ts)+' · <span data-ago="'+n.ts+'">'+ago(n.ts)+'</span>',
+  ne.innerHTML=nl.length?nl.map(({n,nwn})=>{const an=nwn&&!S.anim.has(n.id);if(an)S.anim.add(n.id);const col=catCol(n.cat),when=n.kind==='WIKI'?new Date(n.day).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric',timeZone:'UTC'}):fmt(n.ts)+' · <span data-ago="'+n.ts+'">'+ago(n.ts)+'</span>',
    inner=`${nwn?'<b class="nbadge">NEW</b> ':''}<b>${esc(n.region.toUpperCase())}</b> · ${esc(n.hc?HLN[n.hc][0]:n.cat)}<span class="tt">${esc(n.title)}</span><div class="mono">${when} · ${esc(n.src)}${n.hc==='hollywood'||n.hc==='bollywood'?' · not fact-checked':''} · ${n.kind==='WIKI'?'WIKIPEDIA CURRENT EVENTS':(n.lab||'THE GUARDIAN API')}</div>`,cl='nw2'+(nwn?' nw':'')+(an?' an':'');
    return n.url?`<a class="${cl}" style="--c:${col}" href="${esc(n.url)}" target="_blank" rel="noopener noreferrer">${inner}</a>`:`<div class="${cl}" style="--c:${col}">${inner}</div>`}).join('')
    :'<p class="lbl" style="padding:14px">'+(NSRC.every(x=>x.st!=='ok')?'Waiting for the latest headlines…':'No headlines match this filter.')+'</p>';
@@ -1166,7 +1169,7 @@ function renderMore(L){
  const cr=[...cm].sort((a,b)=>b[1].n-a[1].n).slice(0,15).map(([k,o])=>{const s=Object.values(SEV).find(x=>x.r===o.r);return`<tr><td>${esc(k)}</td><td class="mono">${o.n}</td><td>${s.i} ${s.l}</td><td class="mono">${ago(o.t)}</td></tr>`});
  const hi=L.filter(e=>e.sev==='critical'||e.sev==='high').sort((a,b)=>b.ts-a.ts).slice(0,10).map(evBtn).join('')||'<p class="lbl" style="padding:10px">No critical or high events.</p>';
  const big=eq.sort((a,b)=>b.m-a.m).slice(0,8).map(x=>evBtn(x.e)).join('')||'<p class="lbl" style="padding:10px">No earthquakes loaded.</p>';
- const md=L.filter(e=>e.id.startsWith('winc:')).sort((a,b)=>b.ts-a.ts).slice(0,12).map(e=>`<tr data-id="${esc(e.id)}" class="clk"><td>${etl(e.title)}</td><td>${esc(e.country)}</td><td class="mono">${new Date(e.ts).toISOString().slice(5,10)}</td></tr>`);
+ const md=L.filter(e=>e.id.startsWith('winc:')).sort((a,b)=>b.ts-a.ts).slice(0,12).map(e=>`<tr data-id="${esc(e.id)}" class="clk"><td>${etl(e.title)}</td><td>${esc(e.country)}</td><td class="mono">${new Date(e.ts).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric',timeZone:'UTC'})}</td></tr>`);
   const about=`<div class="ab"><p><b>Global alert level</b> is an interface aggregation of loaded events: CRITICAL if any critical event exists, HIGH if 5 or more high events, ELEVATED if any high event, otherwise NORMAL. It is not an official risk rating.</p>
 <p><b>Severity rules.</b> USGS earthquakes: M7+ critical, M6+ high, M4.5+ moderate, below that low. NASA EONET: volcanoes high, storms/fires/floods moderate, other low. NOAA NWS: Extreme critical, Severe high. Wikipedia-derived attack items: high.</p>
 <p><b>Data status.</b> VERIFIED SOURCE = reviewed by the publishing agency. PRELIMINARY = automatic, may be revised. UNVERIFIED = aggregated or media-derived, not confirmed. DEMO / SIMULATED = synthetic sample data shown only when no live source is reachable.</p>
@@ -1185,7 +1188,7 @@ function renderMore(L){
  card('Latest critical &amp; high events','<div>'+hi+'</div>')+
  card('Strongest earthquakes','<div>'+big+'</div>')+
  card('Top countries by events',tbl(['Country','Events','Worst','Latest'],cr))+
- card('Reported attacks, blasts &amp; hijacks (Wikipedia, approximate location)',tbl(['Report','Country','Date'],md))+
+ card('Reported attacks, blasts &amp; hijacks (Wikipedia, approximate location)',tbl(['Report','Country','Incident date'],md))+
  card('Crypto movers, 24 h change (%)',(()=>{const r=NSRC.filter(x=>x.market).flatMap(x=>x.ev).filter(c=>c.ch24!=null).sort((a,b)=>b.ch24-a.ch24);return bars(r.map(c=>[(c.ch24>=0?'▲ ':'▼ ')+c.sym,+Math.abs(c.ch24).toFixed(2),c.ch24>=0?'#00d084':'#ff4d4d']))})())+
  card('Wildfires, storms, floods &amp; volcanoes','<div>'+(L.filter(e=>['fire','volcanic','weather','flood'].includes(e.type)).sort((a,b)=>SEV[b.sev].r-SEV[a.sev].r||b.ts-a.ts).slice(0,12).map(evBtn).join('')||'<p class="lbl" style="padding:10px">None in the selected range.</p>')+'</div>')+
  card('Gaming news',gamingHTML())+
@@ -1212,6 +1215,7 @@ function renderDetail(e){const el=$('#detail');
  `<div class="tools">${/^https:\/\//.test(e.url)?`<a href="${esc(e.url)}" target="_blank" rel="noopener noreferrer"><button>Open source</button></a>`:''}</div>`;$('#evb').hidden=false}
 
 function render(){
+ hydrateIncidentDates();
  if(document.hidden){dirty=1;return}
  if(Date.now()-lastScrollT<180){if(!rT)rT=setTimeout(()=>{rT=0;render()},220);return}
  const all=events().map(e=>({...e,region:region(e.lat,e.lon),country:countryOf(e.lat,e.lon)||e.country}));
