@@ -906,7 +906,7 @@ const TYPES=['all','terror','blast','hijack','earthquake','weather','fire','floo
 const REGIONS=['North America','South America','Europe','Africa','Middle East','Asia','Oceania','Arctic / Antarctic'];
 const region=(la,lo)=>la>66||la<-60?'Arctic / Antarctic':lo<-30?(la>12?'North America':'South America'):lo<-25&&la>12?'North America':
  (lo>=-20&&lo<45&&la>=35)?'Europe':(lo>=-20&&lo<52&&la<35&&la>-36&&!(lo>34&&la>12))?'Africa':(lo>=34&&lo<60&&la>12&&la<38)?'Middle East':lo>110&&la<-8||lo>150||(lo>110&&la<0)?'Oceania':'Asia';
-const S={type:'all',sev:'',sort:'time',q:'',region:'',sel:null,zones:true,utc:false,sound:false,notify:false,demo:false,seen:new Set(),anim:new Set(),nf:new Map(),nfirst:1,relay:true,rng:864e5,log:[],fs:new Map(),lastNote:0,first:true};
+const S={type:'all',sev:'',sort:'time',q:'',region:'',sel:null,zones:true,utc:false,sound:false,notify:false,demo:false,seen:new Set(),anim:new Set(),na:new Map(),nk:new Set(),ns:new Map(),nseq:0,nt:0,relay:true,rng:864e5,log:[],fs:new Map(),lastNote:0,first:true};
 const utc=x=>Date.parse(/Z|[+-]\d\d:?\d\d$/.test(x)?x:x+'Z');
 const pNWS=j=>(j.features||[]).slice(0,150).map(f=>{const p=f.properties||{},g=f.geometry;if(!g)return null;const pts=[];(function w(c){typeof c[0]==='number'?pts.push(c):c.forEach(w)})(g.coordinates);if(!pts.length)return null;
  const lo=pts.reduce((a,c)=>a+c[0],0)/pts.length,la=pts.reduce((a,c)=>a+c[1],0)/pts.length,ev=p.event||'Alert';
@@ -1032,10 +1032,39 @@ function pEONET(j){const map={wildfires:['fire','moderate'],severeStorms:['weath
 async function getJSON(u,xml){if(navigator.onLine===false)throw new Error('no internet connection');const ac=new AbortController(),to=setTimeout(()=>ac.abort(),12e3);try{const r=await fetch(u,{signal:ac.signal,cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);if(xml){const d=new DOMParser().parseFromString(await r.text(),'text/xml');if(d.querySelector('parsererror'))throw new Error('unreadable feed');return d}return await r.json()}finally{clearTimeout(to)}}
 async function fetchSrc(s){let first;for(const c of [{url:s.urlf?s.urlf():s.url,parse:s.parse},...(s.alts||[])]){try{const j=await getJSON(c.url);s.cur=c.parse;s.via=c===undefined?'':'direct';return j}catch(e){first=first||e}}throw first}
 const friendly=e=>/HTTP (400|404)/.test(e.message)?'account or feed not found (will retry hourly)':navigator.onLine===false?'no internet connection':e.name==='AbortError'?'timeout':e.name==='TypeError'?'blocked by browser (CORS) or network error'+(S.relay?'; relay also failed':''):e.name==='SyntaxError'?'unexpected response (possibly rate-limited)':e.message;
+// ---- NEW badge bookkeeping -------------------------------------------------
+// Arrival is recorded when a news source delivers data (not while rendering), so
+// filters, search and tab visibility can never create, hide or re-create badges.
+const NEWMS=9e4; // how long the NEW badge stays on a post
+const tKey=n=>'t:'+String(n.title).toLowerCase().slice(0,60); // same key renderNews uses to de-duplicate
+function markNew(s){
+ if(!NSRC.includes(s)||s.market||s.gm||s.mv)return;
+ const base=!s.nb;if(s.ev.length)s.nb=1;           // a source's first non-empty load is just the existing backlog
+ const fresh=[];
+ // oldest first, so the newest post of a batch gets the highest sequence number (= top of list)
+ s.ev.slice().sort((x,y)=>x.ts-y.ts).forEach(n=>{
+  const isNew=!S.nk.has('i:'+n.id)&&!S.nk.has(tKey(n));
+  S.nk.add('i:'+n.id);S.nk.add(tKey(n));
+  if(!S.ns.has(n.id))S.ns.set(n.id,++S.nseq);       // order in which we first saw each post
+  if(isNew&&!base)fresh.push(n)});
+ const now=Date.now(),hid=document.hidden;
+ fresh.forEach(n=>S.na.set(n.id,{q:S.ns.get(n.id),t:hid?0:now}));
+ if(S.nk.size>2e4){S.nk=new Set();NSRC.forEach(x=>x.ev.forEach(n=>{S.nk.add('i:'+n.id);S.nk.add(tKey(n))}))}
+}
+// Removes expired badges straight from the DOM (no list rebuild, so no scroll jump) and
+// schedules itself for the next expiry. Also called every 5 s and when the tab returns.
+function tickNew(){
+ clearTimeout(S.nt);const now=Date.now();let next=0;
+ document.querySelectorAll('#news .nbadge').forEach(b=>{
+  const left=NEWMS-(now-(+b.dataset.nt||0));
+  if(left>0){next=next?Math.min(next,left):left;return}
+  const p=b.closest('.nw2');if(p)p.classList.remove('nw');b.remove()});
+ if(next)S.nt=setTimeout(tickNew,next+20);
+}
 async function poll(s){
  if(s.busy)return;s.busy=1;
  try{const j=await fetchSrc(s);
-  const prev=new Set(s.ev.map(e=>e.id)),was=s.st,nm=s.name+' · '+s.kind;s.ev=(s.cur||s.parse)(j);if(s.market||s.ev.length!==prev.size||s.ev.some(e=>!prev.has(e.id)))DV++;const fresh=s.last?s.ev.filter(e=>!prev.has(e.id)):[];s.newN=fresh.length;s.st='ok';s.last=Date.now();s.fails=0;s.err='';s.hide=0;
+  const prev=new Set(s.ev.map(e=>e.id)),was=s.st,nm=s.name+' · '+s.kind;s.ev=(s.cur||s.parse)(j);if(s.market||s.ev.length!==prev.size||s.ev.some(e=>!prev.has(e.id)))DV++;const fresh=s.last?s.ev.filter(e=>!prev.has(e.id)):[];markNew(s);s.newN=fresh.length;s.st='ok';s.last=Date.now();s.fails=0;s.err='';s.hide=0;
    if(fresh.length&&!s.market)logUp(nm,'+'+fresh.length+' new: '+fresh.slice(0,2).map(e=>e.title).join('; ')+(fresh.length>2?' …':''));}
  catch(e){s.st='error';s.fails++;s.err=friendly(e);s.hide=!s.last}
  finally{s.busy=0;}
@@ -1100,19 +1129,22 @@ function hlCat0(n){if(n.hlcat)return n.hlcat;const t=n.title,k=KW2.find(x=>x[1].
  if(n.kind==='WIKI'){const c=n.cat||'';return/sport/i.test(c)?'sports':/arts|culture/i.test(c)?'hollywood':/science|tech/i.test(c)?'science':/health/i.test(c)?'medical':/conflict|politic|relation|law/i.test(c)?'geo':null}return null}
 const wd=t=>new Set(String(t).toLowerCase().replace(/[^a-z0-9 ]/g,' ').split(/\s+/).filter(w=>w.length>3));
 const ov=(a,b)=>{let i=0;a.forEach(w=>{if(b.has(w))i++});return i};
-function renderNews(){const gk=DV+'|'+NEWSR+'|'+NEWSC+'|'+S.q+'|'+(Date.now()/15e3|0)+'|'+isMob();if(renderNews.gk===gk)return;renderNews.gk=gk;const q=S.q.toLowerCase(),seen=new Set(),nowT=Date.now();
+function renderNews(){const nowP=Date.now();S.na.forEach(v=>{if(!v.t)v.t=nowP}); // arrived while tab hidden: badge clock starts now that it's visible
+ const gk=DV+'|'+NEWSR+'|'+NEWSC+'|'+S.q+'|'+(Date.now()/15e3|0)+'|'+isMob();if(renderNews.gk===gk)return;renderNews.gk=gk;const q=S.q.toLowerCase(),seen=new Set(),nowT=Date.now();
  let a=NSRC.filter(s=>!s.market&&!s.gm&&!s.mv).flatMap(s=>s.ev).filter(n=>!/sport|arts|culture|entertain/i.test(n.cat)).map(n=>({...n,region:regOf(n.title),hc:hlCat(n)}))
+  .sort((x,y)=>(S.ns.get(x.id)||0)-(S.ns.get(y.id)||0)) // first-seen copy of a duplicate story is the one kept
   .filter(n=>{const k=n.title.toLowerCase().slice(0,60);if(seen.has(k))return false;seen.add(k);return true})
-  .filter(n=>(!NEWSR||n.region===NEWSR)&&(!NEWSC||n.hc===NEWSC)&&(!q||(n.title+n.cat+n.src+n.region).toLowerCase().includes(q))).sort((x,y)=>y.ts-x.ts);
- a.forEach(n=>{if(!S.nf.has(n.id))S.nf.set(n.id,S.nfirst?0:nowT)});S.nf.forEach((v,k)=>{if(!NSRC.some(x=>x.ev.some(y=>y.id===k)))S.nf.delete(k)});if(NSRC.every(x=>x.st!=='pending'))S.nfirst=0;
+  .filter(n=>(!NEWSR||n.region===NEWSR)&&(!NEWSC||n.hc===NEWSC)&&(!q||(n.title+n.cat+n.src+n.region).toLowerCase().includes(q)))
+  .sort((x,y)=>{const p=S.na.get(x.id),r=S.na.get(y.id);return p&&r?r.q-p.q:p?-1:r?1:y.ts-x.ts});
+ {const live=new Set(NSRC.flatMap(x=>x.ev.map(y=>y.id)));S.na.forEach((v,k)=>{if(!live.has(k))S.na.delete(k)});S.ns.forEach((v,k)=>{if(!live.has(k))S.ns.delete(k)})}
  $('#nwc').textContent='('+a.length+')';
- const ne=$('#news'),nl=a.slice(0,isMob()?6:250).map(n=>({n,nwn:S.nf.get(n.id)>0&&nowT-S.nf.get(n.id)<9e4})),nsig=nl.map(x=>x.n.id+(x.nwn?1:0)).join('|')||('empty'+NSRC.every(x=>x.st!=='ok'));
+ const ne=$('#news'),nl=a.slice(0,isMob()?6:250).map(n=>{const v=S.na.get(n.id);return{n,nt:v&&nowT-v.t<NEWMS?v.t:0}}),nsig=nl.map(x=>x.n.id).join('|')||('empty'+NSRC.every(x=>x.st!=='ok'));
  if(ne._sig!==nsig){ne._sig=nsig;const st=ne.scrollTop;
-  ne.innerHTML=nl.length?nl.map(({n,nwn})=>{const an=nwn&&!S.anim.has(n.id);if(an)S.anim.add(n.id);const col=catCol(n.cat),when=n.kind==='WIKI'?new Date(n.day).toUTCString().slice(5,11):fmt(n.ts)+' · <span data-ago="'+n.ts+'">'+ago(n.ts)+'</span>',
-   inner=`${nwn?'<b class="nbadge">NEW</b> ':''}<b>${esc(n.region.toUpperCase())}</b> · ${esc(n.hc?HLN[n.hc][0]:n.cat)}<span class="tt">${esc(n.title)}</span><div class="mono">${when} · ${esc(n.src)}${n.hc==='hollywood'||n.hc==='bollywood'?' · not fact-checked':''} · ${n.kind==='WIKI'?'WIKIPEDIA CURRENT EVENTS':(n.lab||'THE GUARDIAN API')}</div>`,cl='nw2'+(nwn?' nw':'')+(an?' an':'');
+  ne.innerHTML=nl.length?nl.map(({n,nt})=>{const nwn=!!nt,an=nwn&&!S.anim.has(n.id);if(an)S.anim.add(n.id);const col=catCol(n.cat),when=n.kind==='WIKI'?new Date(n.day).toUTCString().slice(5,11):fmt(n.ts)+' · <span data-ago="'+n.ts+'">'+ago(n.ts)+'</span>',
+   inner=`${nwn?'<b class="nbadge" data-nt="'+nt+'">NEW</b> ':''}<b>${esc(n.region.toUpperCase())}</b> · ${esc(n.hc?HLN[n.hc][0]:n.cat)}<span class="tt">${esc(n.title)}</span><div class="mono">${when} · ${esc(n.src)}${n.hc==='hollywood'||n.hc==='bollywood'?' · not fact-checked':''} · ${n.kind==='WIKI'?'WIKIPEDIA CURRENT EVENTS':(n.lab||'THE GUARDIAN API')}</div>`,cl='nw2'+(nwn?' nw':'')+(an?' an':'');
    return n.url?`<a class="${cl}" style="--c:${col}" href="${esc(n.url)}" target="_blank" rel="noopener noreferrer">${inner}</a>`:`<div class="${cl}" style="--c:${col}">${inner}</div>`}).join('')
    :'<p class="lbl" style="padding:14px">'+(NSRC.every(x=>x.st!=='ok')?'Waiting for the latest headlines…':'No headlines match this filter.')+'</p>';
-  ne.scrollTop=st;if(S.anim.size>800)S.anim.clear()}}
+  ne.scrollTop=st;if(S.anim.size>800)S.anim.clear()}tickNew()}
 
 $('#nsr').innerHTML=[['','All regions']].concat(REGIONS.concat(['Global']).map(r=>[r,r])).map(x=>`<option value="${x[0]}">${x[1]}</option>`).join('');
 $('#nsc').innerHTML=[['','All topics']].concat(Object.keys(HLN).filter(k=>k!=='bollywood').map(k=>[k,HLN[k][0]])).map(x=>`<option value="${x[0]}">${x[1]}</option>`).join('');
@@ -1268,10 +1300,10 @@ let dt;$('#q').oninput=e=>{clearTimeout(dt);dt=setTimeout(()=>{S.q=e.target.valu
 const tog=(id,k,txt,after)=>{$(id).onclick=function(){S[k]=!S[k];this.setAttribute('aria-pressed',S[k]);if(txt)this.textContent=txt(S[k]);after&&after();render()}};
 tog('#zn','zones');
 const T1=setInterval(()=>{if(document.hidden)return;const n=new Date();$('#utc').textContent=n.toISOString().slice(11,19);$('#loc').textContent=n.toLocaleTimeString([], {hour12:false})},1000);
-const T2=setInterval(render,30e3),T3=setInterval(()=>document.hidden||document.querySelectorAll('[data-ago]').forEach(x=>{x.textContent=ago(+x.dataset.ago)}),5e3);
+const T2=setInterval(render,30e3),T3=setInterval(()=>document.hidden||(tickNew(),document.querySelectorAll('[data-ago]').forEach(x=>{x.textContent=ago(+x.dataset.ago)})),5e3);
 addEventListener('online',()=>[...SRC,...NSRC].forEach(x=>{clearTimeout(x.t);setTimeout(()=>poll(x),x.delay||0)}));addEventListener('offline',render);
-document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(dirty){dirty=0;render()}[...SRC,...NSRC].forEach(x=>{clearTimeout(x.t);setTimeout(()=>poll(x),x.delay||0)})}});
-addEventListener('pagehide',()=>{clearInterval(T1);clearInterval(T2);clearInterval(T3);clearTimeout(rT);RO&&RO.disconnect();[...SRC,...NSRC].forEach(x=>clearTimeout(x.t))}); // refresh relative times and source countdowns
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(dirty){dirty=0;render()}tickNew();[...SRC,...NSRC].forEach(x=>{clearTimeout(x.t);setTimeout(()=>poll(x),x.delay||0)})}});
+addEventListener('pagehide',()=>{clearInterval(T1);clearInterval(T2);clearInterval(T3);clearTimeout(rT);clearTimeout(S.nt);RO&&RO.disconnect();[...SRC,...NSRC].forEach(x=>clearTimeout(x.t))}); // refresh relative times and source countdowns
 
 $('#cs').onclick=()=>{spot(null);fitIndia(true)};$('#ce').onclick=()=>{S.sel=null;spot(null);renderDetail();fitIndia(true)};
 $('#more').onclick=e=>{const b=e.target.closest('[data-id]');if(b){select(b.dataset.id,true);scrollTo({top:0,behavior:'smooth'})}};
