@@ -906,7 +906,7 @@ const TYPES=['all','terror','blast','hijack','earthquake','weather','fire','floo
 const REGIONS=['North America','South America','Europe','Africa','Middle East','Asia','Oceania','Arctic / Antarctic'];
 const region=(la,lo)=>la>66||la<-60?'Arctic / Antarctic':lo<-30?(la>12?'North America':'South America'):lo<-25&&la>12?'North America':
  (lo>=-20&&lo<45&&la>=35)?'Europe':(lo>=-20&&lo<52&&la<35&&la>-36&&!(lo>34&&la>12))?'Africa':(lo>=34&&lo<60&&la>12&&la<38)?'Middle East':lo>110&&la<-8||lo>150||(lo>110&&la<0)?'Oceania':'Asia';
-const S={type:'all',sev:'',sort:'time',q:'',region:'',sel:null,zones:true,utc:false,sound:false,notify:false,demo:false,seen:new Set(),anim:new Set(),nf:new Map(),nseen:new Set(),nfirst:1,relay:true,rng:864e5,log:[],fs:new Map(),lastNote:0,first:true};
+const S={type:'all',sev:'',sort:'time',q:'',region:'',sel:null,zones:true,utc:false,sound:false,notify:false,demo:false,seen:new Set(),anim:new Set(),nf:new Map(),nfirst:1,relay:true,rng:864e5,log:[],fs:new Map(),lastNote:0,first:true};
 const utc=x=>Date.parse(/Z|[+-]\d\d:?\d\d$/.test(x)?x:x+'Z');
 const pNWS=j=>(j.features||[]).slice(0,150).map(f=>{const p=f.properties||{},g=f.geometry;if(!g)return null;const pts=[];(function w(c){typeof c[0]==='number'?pts.push(c):c.forEach(w)})(g.coordinates);if(!pts.length)return null;
  const lo=pts.reduce((a,c)=>a+c[0],0)/pts.length,la=pts.reduce((a,c)=>a+c[1],0)/pts.length,ev=p.event||'Alert';
@@ -1104,42 +1104,11 @@ function renderNews(){const gk=DV+'|'+NEWSR+'|'+NEWSC+'|'+S.q+'|'+(Date.now()/15
  let a=NSRC.filter(s=>!s.market&&!s.gm&&!s.mv).flatMap(s=>s.ev).filter(n=>!/sport|arts|culture|entertain/i.test(n.cat)).map(n=>({...n,region:regOf(n.title),hc:hlCat(n)}))
   .filter(n=>{const k=n.title.toLowerCase().slice(0,60);if(seen.has(k))return false;seen.add(k);return true})
   .filter(n=>(!NEWSR||n.region===NEWSR)&&(!NEWSC||n.hc===NEWSC)&&(!q||(n.title+n.cat+n.src+n.region).toLowerCase().includes(q))).sort((x,y)=>y.ts-x.ts);
- // Stable news identity: API post IDs can change across refreshes, so use the
- // source plus a normalized headline as the identity for NEW state.
- const newsKey=n=>{
-  const src=String(n.src||n.lab||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
-  const title=String(n.title||'').toLowerCase().replace(/https?:\/\/\S+/g,'').replace(/[^a-z0-9]+/g,' ').trim();
-  return src+'|'+title.slice(0,180);
- };
- const cur=new Map(a.map(n=>[newsKey(n),n]));
- if(S.nfirst){
-  cur.forEach((n,k)=>S.nseen.add(k));
-  if(NSRC.every(x=>x.st!=='pending'))S.nfirst=0;
- }else{
-  cur.forEach((n,k)=>{
-   if(!S.nseen.has(k)){
-    S.nseen.add(k);
-    S.nf.set(k,{at:nowT,ts:+n.ts||nowT});
-   }
-  });
- }
- // Keep NEW state deterministic. The earliest badge arrival always expires first.
- // Do not refresh/restart a badge merely because the source reloaded the same story.
- const NEW_MS=9e4;
- S.nf.forEach((v,k)=>{
-  if(!cur.has(k)||nowT-v.at>=NEW_MS)S.nf.delete(k);
- });
- $('#nwc').textContent='('+a.length+')'+(S.nf.size?' · '+S.nf.size+' new':'');
- const ne=$('#news');
- const nl=a.slice(0,isMob()?6:250).map(n=>{
-  const k=newsKey(n),v=S.nf.get(k);
-  return {n,nwn:!!v&&nowT-v.at<NEW_MS,newAt:v?v.at:0};
- });
- // Oldest NEW item first. This gives deterministic behavior when several arrive together.
- nl.sort((x,y)=>(x.nwn?x.newAt:Infinity)-(y.nwn?y.newAt:Infinity));
- const nsig=nl.map(x=>newsKey(x.n)+(x.nwn?1:0)).join('|')||('empty'+NSRC.every(x=>x.st!=='ok'));
+ a.forEach(n=>{if(!S.nf.has(n.id))S.nf.set(n.id,S.nfirst?0:nowT)});S.nf.forEach((v,k)=>{if(!NSRC.some(x=>x.ev.some(y=>y.id===k)))S.nf.delete(k)});if(NSRC.every(x=>x.st!=='pending'))S.nfirst=0;
+ $('#nwc').textContent='('+a.length+')';
+ const ne=$('#news'),nl=a.slice(0,isMob()?6:250).map(n=>({n,nwn:S.nf.get(n.id)>0&&nowT-S.nf.get(n.id)<9e4})),nsig=nl.map(x=>x.n.id+(x.nwn?1:0)).join('|')||('empty'+NSRC.every(x=>x.st!=='ok'));
  if(ne._sig!==nsig){ne._sig=nsig;const st=ne.scrollTop;
-  ne.innerHTML=nl.length?nl.map(({n,nwn})=>{const nk=newsKey(n),an=nwn&&!S.anim.has(nk);if(an)S.anim.add(nk);const col=catCol(n.cat),when=n.kind==='WIKI'?new Date(n.day).toUTCString().slice(5,11):fmt(n.ts)+' · <span data-ago="'+n.ts+'">'+ago(n.ts)+'</span>',
+  ne.innerHTML=nl.length?nl.map(({n,nwn})=>{const an=nwn&&!S.anim.has(n.id);if(an)S.anim.add(n.id);const col=catCol(n.cat),when=n.kind==='WIKI'?new Date(n.day).toUTCString().slice(5,11):fmt(n.ts)+' · <span data-ago="'+n.ts+'">'+ago(n.ts)+'</span>',
    inner=`${nwn?'<b class="nbadge">NEW</b> ':''}<b>${esc(n.region.toUpperCase())}</b> · ${esc(n.hc?HLN[n.hc][0]:n.cat)}<span class="tt">${esc(n.title)}</span><div class="mono">${when} · ${esc(n.src)}${n.hc==='hollywood'||n.hc==='bollywood'?' · not fact-checked':''} · ${n.kind==='WIKI'?'WIKIPEDIA CURRENT EVENTS':(n.lab||'THE GUARDIAN API')}</div>`,cl='nw2'+(nwn?' nw':'')+(an?' an':'');
    return n.url?`<a class="${cl}" style="--c:${col}" href="${esc(n.url)}" target="_blank" rel="noopener noreferrer">${inner}</a>`:`<div class="${cl}" style="--c:${col}">${inner}</div>`}).join('')
    :'<p class="lbl" style="padding:14px">'+(NSRC.every(x=>x.st!=='ok')?'Waiting for the latest headlines…':'No headlines match this filter.')+'</p>';
@@ -1197,7 +1166,7 @@ function renderMore(L){
  const cr=[...cm].sort((a,b)=>b[1].n-a[1].n).slice(0,15).map(([k,o])=>{const s=Object.values(SEV).find(x=>x.r===o.r);return`<tr><td>${esc(k)}</td><td class="mono">${o.n}</td><td>${s.i} ${s.l}</td><td class="mono">${ago(o.t)}</td></tr>`});
  const hi=L.filter(e=>e.sev==='critical'||e.sev==='high').sort((a,b)=>b.ts-a.ts).slice(0,10).map(evBtn).join('')||'<p class="lbl" style="padding:10px">No critical or high events.</p>';
  const big=eq.sort((a,b)=>b.m-a.m).slice(0,8).map(x=>evBtn(x.e)).join('')||'<p class="lbl" style="padding:10px">No earthquakes loaded.</p>';
- const md=L.filter(e=>e.id.startsWith('winc:')).sort((a,b)=>b.ts-a.ts).slice(0,12).map(e=>{const d=new Date(e.ts),date=`${String(d.getUTCMonth()+1).padStart(2,'0')}/${String(d.getUTCDate()).padStart(2,'0')}/${String(d.getUTCFullYear()).slice(-2)}`;return `<tr data-id="${esc(e.id)}" class="clk"><td>${etl(e.title)}</td><td>${esc(e.country)}</td><td class="mono">${date}</td></tr>`});
+ const md=L.filter(e=>e.id.startsWith('winc:')).sort((a,b)=>b.ts-a.ts).slice(0,12).map(e=>`<tr data-id="${esc(e.id)}" class="clk"><td>${etl(e.title)}</td><td>${esc(e.country)}</td><td class="mono">${new Date(e.ts).toISOString().slice(5,10)}</td></tr>`);
   const about=`<div class="ab"><p><b>Global alert level</b> is an interface aggregation of loaded events: CRITICAL if any critical event exists, HIGH if 5 or more high events, ELEVATED if any high event, otherwise NORMAL. It is not an official risk rating.</p>
 <p><b>Severity rules.</b> USGS earthquakes: M7+ critical, M6+ high, M4.5+ moderate, below that low. NASA EONET: volcanoes high, storms/fires/floods moderate, other low. NOAA NWS: Extreme critical, Severe high. Wikipedia-derived attack items: high.</p>
 <p><b>Data status.</b> VERIFIED SOURCE = reviewed by the publishing agency. PRELIMINARY = automatic, may be revised. UNVERIFIED = aggregated or media-derived, not confirmed. DEMO / SIMULATED = synthetic sample data shown only when no live source is reachable.</p>
