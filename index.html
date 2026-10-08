@@ -990,7 +990,7 @@ const SRC=[
  {id:'usgs',name:'USGS',kind:'Earthquakes (24 h)',url:'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson',every:120e3,delay:1500,parse:pUSGS},
  {id:'eonet',name:'NASA EONET',kind:'Natural events',url:'https://eonet.gsfc.nasa.gov/api/v3/events?status=open&limit=150',every:120e3,parse:pEONET},
  {id:'nws',name:'NOAA NWS',kind:'US severe weather alerts',url:'https://api.weather.gov/alerts/active?status=actual&message_type=alert&severity=Extreme,Severe',every:60e3,delay:3e3,parse:pNWS},
-].map(s=>({...s,st:'pending',ev:[],last:0,fails:0,err:'',t:null}));
+].map(s=>({...s,st:'pending',ev:[],last:0,fails:0,err:'',t:null,ac:null}));
 const MON=['January','February','March','April','May','June','July','August','September','October','November','December'];
 const wikiUrl=d=>{const t=new Date(Date.now()-d*864e5);return'https://en.wikipedia.org/w/api.php?action=parse&format=json&prop=text&origin=*&page='+encodeURIComponent('Portal:Current_events/'+t.getUTCFullYear()+'_'+MON[t.getUTCMonth()]+'_'+t.getUTCDate())};
 const pWiki=d=>j=>{const html=j&&j.parse&&j.parse.text&&j.parse.text['*'];if(!html)return[];
@@ -1090,7 +1090,7 @@ const NSRC=[
  {id:'guardian',name:'The Guardian',kind:'World news API',url:'https://content.guardianapis.com/search?section=world&order-by=newest&page-size=20&api-key=test',every:30e3,delay:3900,parse:pGuardian},
  {id:'crypto',name:'CoinGecko',kind:'Crypto market',market:1,url:'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=12&page=1&sparkline=false&price_change_percentage=1h,24h',every:15e3,delay:200,parse:pMkt,alts:[{url:bnUrl,parse:pBN}]},
  {id:'wiki0',name:'Wikipedia',kind:'Current events (today)',urlf:()=>wikiUrl(0),every:120e3,parse:pWiki(0)},
-].map(s=>({...s,st:'pending',ev:[],last:0,fails:0,err:'',t:null}));
+].map(s=>({...s,st:'pending',ev:[],last:0,fails:0,err:'',t:null,ac:null}));
 
 
 function pUSGS(j){return j.features.filter(f=>f.geometry&&f.properties.mag!=null).map(f=>{const p=f.properties,g=f.geometry.coordinates,m=p.mag;
@@ -1103,16 +1103,16 @@ function pEONET(j){const map={wildfires:['fire','moderate'],severeStorms:['weath
  url:(e.sources[0]&&e.sources[0].url)||e.link,status:'UNVERIFIED',desc:(c.title||'Event')+(g.magnitudeValue!=null?' · '+g.magnitudeValue+' '+(g.magnitudeUnit||''):'')+' · aggregated from third-party sources'}}).filter(Boolean)}
 
 
-async function getJSON(u,xml){if(navigator.onLine===false)throw new Error('no internet connection');const ac=new AbortController(),to=setTimeout(()=>ac.abort(),12e3);try{const r=await fetch(u,{signal:ac.signal,cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);if(xml){const d=new DOMParser().parseFromString(await r.text(),'text/xml');if(d.querySelector('parsererror'))throw new Error('unreadable feed');return d}return await r.json()}finally{clearTimeout(to)}}
-async function fetchSrc(s){let first;for(const c of [{url:s.urlf?s.urlf():s.url,parse:s.parse},...(s.alts||[])]){try{const j=await getJSON(c.url);s.cur=c.parse;s.via=c===undefined?'':'direct';return j}catch(e){first=first||e}}throw first}
+async function getJSON(u,xml,ac){if(navigator.onLine===false)throw new Error('no internet connection');ac=ac||new AbortController();const to=setTimeout(()=>ac.abort(),12e3);try{const r=await fetch(u,{signal:ac.signal,cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);if(xml){const d=new DOMParser().parseFromString(await r.text(),'text/xml');if(d.querySelector('parsererror'))throw new Error('unreadable feed');return d}return await r.json()}finally{clearTimeout(to)}}
+async function fetchSrc(s){let first;const ac=new AbortController();s.ac=ac;for(const c of [{url:s.urlf?s.urlf():s.url,parse:s.parse},...(s.alts||[])]){try{const j=await getJSON(c.url,false,ac);s.cur=c.parse;s.via=c===undefined?'':'direct';return j}catch(e){if(e.name==='AbortError')throw e;first=first||e}}throw first}
 const friendly=e=>/HTTP (400|404)/.test(e.message)?'account or feed not found (will retry hourly)':navigator.onLine===false?'no internet connection':e.name==='AbortError'?'timeout':e.name==='TypeError'?'blocked by browser (CORS) or network error'+(S.relay?'; relay also failed':''):e.name==='SyntaxError'?'unexpected response (possibly rate-limited)':e.message;
 async function poll(s){
  if(s.busy)return;s.busy=1;
  try{const j=await fetchSrc(s);
-  const prev=new Set(s.ev.map(e=>e.id)),was=s.st,nm=s.name+' · '+s.kind;s.ev=(s.cur||s.parse)(j);if(s.market||s.ev.length!==prev.size||s.ev.some(e=>!prev.has(e.id)))DV++;const fresh=s.last?s.ev.filter(e=>!prev.has(e.id)):[];s.newN=fresh.length;s.st='ok';s.last=Date.now();s.fails=0;s.err='';s.hide=0;
+  const prev=new Set(s.ev.map(e=>e.id)),was=s.st,nm=s.name+' · '+s.kind;s.ev=trimFeed(s,(s.cur||s.parse)(j));if(s.market||s.ev.length!==prev.size||s.ev.some(e=>!prev.has(e.id)))DV++;const fresh=s.last?s.ev.filter(e=>!prev.has(e.id)):[];s.newN=fresh.length;s.st='ok';s.last=Date.now();s.fails=0;s.err='';s.hide=0;
    if(fresh.length&&!s.market)logUp(nm,'+'+fresh.length+' new: '+fresh.slice(0,2).map(e=>e.title).join('; ')+(fresh.length>2?' …':''));}
  catch(e){s.st='error';s.fails++;s.err=friendly(e);s.hide=!s.last}
- finally{s.busy=0;}
+ finally{s.busy=0;s.ac=null;}
  const w0=s.hide?(/not found/.test(s.err)?36e5:3e5):s.st==='ok'?s.every:Math.min(s.every*2**s.fails,6e5);
  const wait=document.hidden?Math.max(w0*3,45e3):w0;
  clearTimeout(s.t);s.next=wait;s.at=Date.now()+wait;s.t=setTimeout(()=>poll(s),wait);
@@ -1172,7 +1172,7 @@ const KW2=[['outbreak',/outbreak|epidemic|pandemic|cholera|ebola|measles|mpox|de
  ['tech',/\bai\b|artificial intelligence|\bchip\b|software|apple|google|microsoft|openai|robot|cyber|startup|smartphone|semiconductor|nvidia|tesla|data breach|blockchain|\bapp\b/i],
  ['geo',/\bwar\b|ceasefire|sanction|president|prime minister|election|parliament|treaty|\bnato\b|troops|missile|border|diplomat|summit|tariff|talks|minister|government|protest|coup|gaza|ukraine|russia|china|taiwan|iran|israel|pakistan|india/i]];
 const HCM=new Map();
-function hlCat(n){const k=n.id+'|'+n.title;if(HCM.has(k))return HCM.get(k);if(HCM.size>5000)HCM.clear();const v=hlCat0(n);HCM.set(k,v);return v}
+function hlCat(n){const k=n.id+'|'+n.title;if(HCM.has(k))return HCM.get(k);if(HCM.size>600)HCM.clear();const v=hlCat0(n);HCM.set(k,v);return v}
 function hlCat0(n){if(n.hlcat)return n.hlcat;const t=n.title,k=KW2.find(x=>x[1].test(t));if(k)return k[0];
  if(n.kind==='WIKI'){const c=n.cat||'';return/sport/i.test(c)?'sports':/arts|culture/i.test(c)?'hollywood':/science|tech/i.test(c)?'science':/health/i.test(c)?'medical':/conflict|politic|relation|law/i.test(c)?'geo':null}return null}
 const wd=t=>new Set(String(t).toLowerCase().replace(/[^a-z0-9 ]/g,' ').split(/\s+/).filter(w=>w.length>3));
@@ -1192,12 +1192,14 @@ function renderNews(){const gk=DV+'|'+NEWSR+'|'+NEWSC+'|'+S.q+'|'+(Date.now()/15
    inner=`${nwn?'<b class="nbadge">NEW</b> ':''}<b>${esc(n.region.toUpperCase())}</b> · ${esc(n.hc?HLN[n.hc][0]:n.cat)}<span class="tt">${esc(n.title)}</span><div class="mono">${when} · ${esc(n.src)}${n.hc==='hollywood'||n.hc==='bollywood'?' · not fact-checked':''} · ${n.kind==='WIKI'?'WIKIPEDIA CURRENT EVENTS':(n.lab||'THE GUARDIAN API')}</div>`,cl='nw2'+(nwn?' nw':'')+(an?' an':'');
    return n.url?`<a class="${cl}" style="--c:${col}" href="${esc(n.url)}" target="_blank" rel="noopener noreferrer">${inner}</a>`:`<div class="${cl}" style="--c:${col}">${inner}</div>`}).join('')
    :'<p class="lbl" style="padding:14px">'+(NSRC.every(x=>x.st!=='ok')?'Waiting for the latest headlines…':'No headlines match this filter.')+'</p>';
-  ne.scrollTop=st;if(S.anim.size>800)S.anim.clear()}}
+  ne.scrollTop=st;if(S.anim.size>120)S.anim.clear()}}
 
 $('#nsr').innerHTML=[['','All regions']].concat(REGIONS.concat(['Global']).map(r=>[r,r])).map(x=>`<option value="${x[0]}">${x[1]}</option>`).join('');
 $('#nsc').innerHTML=[['','All topics']].concat(Object.keys(HLN).filter(k=>k!=='bollywood').map(k=>[k,HLN[k][0]])).map(x=>`<option value="${x[0]}">${x[1]}</option>`).join('');
 $('#nsr').onchange=e=>{NEWSR=e.target.value;renderNews()};$('#nsc').onchange=e=>{NEWSC=e.target.value;renderNews()};
 const CC=new Map();
+const MAX_EVENT_ITEMS=80,MAX_NEWS_ITEMS=35;
+function trimFeed(s,items){if(!Array.isArray(items))return [];const cap=s.market?16:(s.kind==='Headlines'||s.hl||s.gm||s.mv?MAX_NEWS_ITEMS:MAX_EVENT_ITEMS);return items.sort((a,b)=>(b.ts||0)-(a.ts||0)).slice(0,cap)}
 function countryOf(la,lo){const k=la.toFixed(1)+','+lo.toFixed(1);if(CC.has(k))return CC.get(k);let r='';for(const f of WF){if(lo<f.b[0]||lo>f.b[2]||la<f.b[1]||la>f.b[3])continue;if(f.polys.some(p=>inRing(p[0],lo,la)&&!p.slice(1).some(h=>inRing(h,lo,la)))){r=f.n;break}}CC.set(k,r);return r}
 const BASE={color:'#8b0000',weight:.7,fillColor:'#150506',fillOpacity:1},BIN={color:'#e03030',weight:1.4,fillColor:'#1e0708',fillOpacity:1},baseOf=()=>BASE;
 const SHORT={'United States':'USA','United Kingdom':'UK','Democratic Republic of the Congo':'DR Congo','Republic of the Congo':'Rep. Congo','Central African Rep.':'CAR','Bosnia and Herz.':'Bosnia','United Arab Emirates':'UAE','Dominican Rep.':'Dominican Rep'};
@@ -1272,10 +1274,10 @@ function renderMore(L){
  card('Movies &amp; entertainment',moviesHTML())+
  card('About this data',about,1);const att=$('#more [data-k=att]');if(att)att.after(CRY)}
 function drawMap(list){
- if(!layer)return;const sig=S.zones+'|'+list.slice(0,800).map(e=>e.id+e.sev).join(',');if(sig===drawMap.sig)return;drawMap.sig=sig;layer.clearLayers();
- if(S.zones)list.slice(0,300).forEach(e=>{const m={critical:4e5,high:25e4,moderate:12e4}[e.sev];if(m)L.circle([e.lat,e.lon],{radius:m,stroke:false,fillColor:SEV[e.sev].c,fillOpacity:e.sev==='critical'?.2:.1,interactive:false}).addTo(layer)});
+ if(!layer)return;const sig=S.zones+'|'+list.slice(0,220).map(e=>e.id+e.sev).join(',');if(sig===drawMap.sig)return;drawMap.sig=sig;layer.clearLayers();
+ if(S.zones)list.slice(0,120).forEach(e=>{const m={critical:4e5,high:25e4,moderate:12e4}[e.sev];if(m)L.circle([e.lat,e.lon],{radius:m,stroke:false,fillColor:SEV[e.sev].c,fillOpacity:e.sev==='critical'?.2:.1,interactive:false}).addTo(layer)});
  list.filter(e=>e.sev==='critical').slice(0,15).forEach(e=>L.marker([e.lat,e.lon],{interactive:false,keyboard:false,icon:L.divIcon({className:'',html:'<div class="pk"></div>',iconSize:[18,18]})}).addTo(layer));
- list.slice(0,800).forEach(e=>{const c=SEV[e.sev];
+ list.slice(0,220).forEach(e=>{const c=SEV[e.sev];
   L.circleMarker([e.lat,e.lon],{radius:4+c.r*2,color:c.c,weight:1.5,fillColor:c.c,fillOpacity:.65})
    .bindTooltip(esc(c.l+' · ')+etl(e.title)).on('click',()=>select(e.id)).addTo(layer)})
 }
@@ -1297,12 +1299,18 @@ function render(){
  if(document.hidden){dirty=1;return}
  if(Date.now()-lastScrollT<180){if(!rT)rT=setTimeout(()=>{rT=0;render()},220);return}
  const dataKey=DV+'|'+incK;
- const all=dataKey===renderDataKey?renderAllCache:(renderAllCache=events().map(e=>({...e,region:region(e.lat,e.lon),country:countryOf(e.lat,e.lon)||e.country})),renderDataKey=dataKey,renderAllCache);
+ let all;
+ if(dataKey===renderDataKey) all=renderAllCache;
+ else {
+  all=events();
+  all.forEach(e=>{const g=e.lat+','+e.lon;if(e._geoKey!==g){e.region=region(e.lat,e.lon);e.country=countryOf(e.lat,e.lon)||e.country;e._geoKey=g}});
+  renderAllCache=all;renderDataKey=dataKey;
+ }
  const list=visible(all);
  const ids=new Set(all.map(e=>e.id)),now=Date.now();
  all.forEach(e=>{if(!S.fs.has(e.id))S.fs.set(e.id,S.first?0:now)});
  S.fs.forEach((v,k)=>{if(!ids.has(k))S.fs.delete(k)});S.seen.forEach(k=>{if(!ids.has(k))S.seen.delete(k)});
- if(CC.size>1000)CC.clear();
+ if(CC.size>350)CC.clear();
  // feed
  const nn=SRC.reduce((a,x)=>a+(x.newN||0),0);$('#cnt').textContent='('+list.length+')'+(nn?' +'+nn+' new':'');
  const fe=$('#feed'),fl=list.slice(0,isMob()?6:120).map(e=>({e,nw:S.fs.get(e.id)>0&&now-S.fs.get(e.id)<6e4})),fsig=fl.map(x=>x.e.id+(x.nw?1:0)).join('|')||'empty';
@@ -1356,8 +1364,8 @@ tog('#zn','zones');
 const T1=setInterval(()=>{if(document.hidden)return;const n=new Date();$('#utc').textContent=n.toISOString().slice(11,19);$('#loc').textContent=n.toLocaleTimeString([], {hour12:false})},1000);
 const T2=setInterval(render,30e3),T3=setInterval(()=>document.hidden||document.querySelectorAll('[data-ago]').forEach(x=>{x.textContent=ago(+x.dataset.ago)}),5e3);
 addEventListener('online',()=>[...SRC,...NSRC].forEach(x=>{clearTimeout(x.t);setTimeout(()=>poll(x),x.delay||0)}));addEventListener('offline',render);
-document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(dirty){dirty=0;render()}[...SRC,...NSRC].forEach(x=>{clearTimeout(x.t);setTimeout(()=>poll(x),x.delay||0)})}});
-addEventListener('pagehide',()=>{clearInterval(T1);clearInterval(T2);clearInterval(T3);clearTimeout(rT);RO&&RO.disconnect();[...SRC,...NSRC].forEach(x=>clearTimeout(x.t))}); // refresh relative times and source countdowns
+document.addEventListener('visibilitychange',()=>{if(document.hidden){[...SRC,...NSRC].forEach(x=>{clearTimeout(x.t);x.t=null;if(x.ac)try{x.ac.abort()}catch{}});HCM.clear();RC.clear();CC.clear();S.fs.clear();S.anim.clear();S.seen.clear();renderAllCache=[];renderDataKey='';return}if(dirty){dirty=0;render()}[...SRC,...NSRC].forEach(x=>{clearTimeout(x.t);x.t=setTimeout(()=>poll(x),x.delay||0)})});
+addEventListener('pagehide',()=>{clearInterval(T1);clearInterval(T2);clearInterval(T3);clearTimeout(rT);RO&&RO.disconnect();[...SRC,...NSRC].forEach(x=>{clearTimeout(x.t);if(x.ac)try{x.ac.abort()}catch{}})}); // refresh relative times and source countdowns
 
 $('#cs').onclick=()=>{spot(null);fitIndia(true)};$('#ce').onclick=()=>{S.sel=null;spot(null);renderDetail();fitIndia(true)};
 $('#more').onclick=e=>{const b=e.target.closest('[data-id]');if(b){select(b.dataset.id,true);scrollTo({top:0,behavior:'smooth'})}};
