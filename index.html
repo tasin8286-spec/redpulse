@@ -865,6 +865,80 @@ html{scroll-behavior:smooth}
 #feed,#news{scroll-behavior:auto}
 .ev,.nw2{content-visibility:auto;contain-intrinsic-size:auto 66px}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+/* responsive/performance polish */
+html{-webkit-text-size-adjust:100%;text-rendering:optimizeLegibility;overscroll-behavior-x:none}
+body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overscroll-behavior-x:none}
+button,input,select{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+header{isolation:isolate}
+main{contain:layout style}
+section{contain:layout paint}
+#map{contain:strict;touch-action:pan-y pinch-zoom}
+#feed,#news,.mb{overscroll-behavior:contain}
+.more{contain:layout}
+@media (min-width:1001px) and (max-width:1250px){
+  main{grid-template-columns:280px minmax(0,1fr) 300px;gap:7px;padding:7px}
+  #side #detail{max-height:180px}
+  .card{padding:9px 11px}
+}
+@media (max-width:1000px){
+  header{z-index:1200;backdrop-filter:none;-webkit-backdrop-filter:none}
+  main{contain:none}
+  #mapS{height:56svh;min-height:320px}
+  #map{min-height:0!important}
+  #feed,#news{max-height:none!important}
+  .tools{gap:5px}
+  .tools select,.tools input,.tools button{min-height:38px}
+  .ev,.nw2{padding:9px 10px}
+  .more .mc{content-visibility:auto;contain-intrinsic-size:auto 340px}
+}
+@media (max-width:700px){
+  header{padding:7px 8px;gap:5px 7px}
+  .brand{flex:1 1 auto;max-width:55%}
+  h1{font-size:15px;letter-spacing:.18em}
+  header #live,header #alert{font-size:10px;padding:3px 6px}
+  header>span:not(.pill){font-size:10px}
+  header #q{order:8;min-height:40px;font-size:14px}
+  .tick{order:10;gap:7px}
+  .tk{font-size:11px}
+  main{padding:5px;gap:7px}
+  #stats{gap:6px}
+  #stats .card{padding:8px 9px}
+  #stats .card .n{font-size:19px}
+  #mapS{height:52svh;min-height:290px}
+  #mapS>h2{padding:6px 8px}
+  #mapS>h2 span:last-child{display:flex;flex-wrap:wrap;gap:4px}
+  #mapS>h2 button{min-height:34px;padding:5px 8px}
+  .tools{padding:5px}
+  .tools select,.tools input{flex:1 1 46%;min-width:0}
+  .row{padding:7px 8px}
+  .more{gap:7px;padding:0 5px 18px}
+  .mc .mb,.mc.wide .mb,.mc[data-k=att] .mb,.mc.cr .mb{height:auto;max-height:none}
+  .tb{font-size:11px;min-width:0}
+  .tw{width:100%}
+  .tw .tb{min-width:500px}
+}
+@media (max-width:480px){
+  header{padding:6px}
+  .brand{max-width:100%}
+  header>span:not(.pill){display:none}
+  header #live,header #alert{flex:0 0 auto}
+  header #q{flex-basis:100%;order:8}
+  .tick{margin-top:1px}
+  #mapS{height:48svh;min-height:275px}
+  section>h2{padding:7px 8px;font-size:9px;letter-spacing:.11em}
+  .ev,.nw2{padding:9px 8px}
+  .ev div,.nw2 div{font-size:10px}
+  #stats{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  #stats .card{padding:8px}
+  .card .lbl{font-size:9px}
+  .card .n{font-size:18px!important}
+  .more{padding-left:4px;padding-right:4px}
+}
+@media (max-width:700px) and (orientation:landscape){
+  #mapS{height:78svh;min-height:300px}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 </style></head><body>
 <header>
 <div class="brand"><h1>REDPULSE</h1><span class="lbl">Global threat monitor</span></div><svg class="ecg" viewBox="0 0 120 24" aria-hidden="true"><polyline points="0,12 22,12 28,12 32,3 38,21 43,12 70,12 76,12 80,5 86,19 90,12 120,12"/></svg>
@@ -906,7 +980,7 @@ const TYPES=['all','terror','blast','hijack','earthquake','weather','fire','floo
 const REGIONS=['North America','South America','Europe','Africa','Middle East','Asia','Oceania','Arctic / Antarctic'];
 const region=(la,lo)=>la>66||la<-60?'Arctic / Antarctic':lo<-30?(la>12?'North America':'South America'):lo<-25&&la>12?'North America':
  (lo>=-20&&lo<45&&la>=35)?'Europe':(lo>=-20&&lo<52&&la<35&&la>-36&&!(lo>34&&la>12))?'Africa':(lo>=34&&lo<60&&la>12&&la<38)?'Middle East':lo>110&&la<-8||lo>150||(lo>110&&la<0)?'Oceania':'Asia';
-const S={type:'all',sev:'',sort:'time',q:'',region:'',sel:null,zones:true,utc:false,sound:false,notify:false,demo:false,seen:new Set(),anim:new Set(),nf:new Map(),nfirst:1,nmax:0,relay:true,rng:864e5,log:[],fs:new Map(),lastNote:0,first:true};
+const S={type:'all',sev:'',sort:'time',q:'',region:'',sel:null,zones:true,utc:false,sound:false,notify:false,demo:false,seen:new Set(),anim:new Set(),nf:new Map(),nbase:new Map(),nfirst:1,nmax:0,relay:true,rng:864e5,log:[],fs:new Map(),lastNote:0,first:true};
 const utc=x=>Date.parse(/Z|[+-]\d\d:?\d\d$/.test(x)?x:x+'Z');
 const pNWS=j=>(j.features||[]).slice(0,150).map(f=>{const p=f.properties||{},g=f.geometry;if(!g)return null;const pts=[];(function w(c){typeof c[0]==='number'?pts.push(c):c.forEach(w)})(g.coordinates);if(!pts.length)return null;
  const lo=pts.reduce((a,c)=>a+c[0],0)/pts.length,la=pts.reduce((a,c)=>a+c[1],0)/pts.length,ev=p.event||'Alert';
@@ -1110,7 +1184,7 @@ function newsDup(a){const out=[],keys=[],urls=[];for(const n of a){const k=newsN
 function renderNews(){const gk=DV+'|'+NEWSR+'|'+NEWSC+'|'+S.q+'|'+(Date.now()/15e3|0)+'|'+isMob();if(renderNews.gk===gk)return;renderNews.gk=gk;const q=S.q.toLowerCase(),seen=new Set(),nowT=Date.now();
  let a=newsDup(NSRC.filter(s=>!s.market&&!s.gm&&!s.mv).flatMap(s=>s.ev).filter(n=>!/sport|arts|culture|entertain/i.test(n.cat)).map(n=>({...n,region:regOf(n.title),hc:hlCat(n)})).sort((x,y)=>y.ts-x.ts))
   .filter(n=>(!NEWSR||n.region===NEWSR)&&(!NEWSC||n.hc===NEWSC)&&(!q||(n.title+n.cat+n.src+n.region).toLowerCase().includes(q))).sort((x,y)=>y.ts-x.ts);
- const allNow=NSRC.flatMap(s=>s.ev).filter(n=>Number.isFinite(n.ts)),latestNow=allNow.reduce((m,n)=>Math.max(m,n.ts),0),feedsReady=NSRC.every(x=>x.st!=='pending');if(S.nfirst){if(feedsReady){S.nmax=latestNow;a.forEach(n=>S.nf.set(n.id,0));S.nfirst=0}else a.forEach(n=>{if(!S.nf.has(n.id))S.nf.set(n.id,0)});}else{a.forEach(n=>{if(!S.nf.has(n.id))S.nf.set(n.id,n.ts>S.nmax?nowT:0)});if(latestNow>S.nmax)S.nmax=latestNow;}S.nf.forEach((v,k)=>{if(!NSRC.some(x=>x.ev.some(y=>y.id===k)))S.nf.delete(k)});
+ const feedsReady=NSRC.every(x=>x.st!=='pending');if(S.nfirst){if(feedsReady){S.nbase=new Map(NSRC.map(src=>[src.id,Math.max(0,...src.ev.filter(n=>Number.isFinite(n.ts)).map(n=>n.ts))]));a.forEach(n=>S.nf.set(n.id,0));S.nfirst=0}else a.forEach(n=>{if(!S.nf.has(n.id))S.nf.set(n.id,0)});}else{NSRC.forEach(src=>{const base=S.nbase.get(src.id)||0,latest=Math.max(0,...src.ev.filter(n=>Number.isFinite(n.ts)).map(n=>n.ts));src.ev.forEach(n=>{if(!S.nf.has(n.id))S.nf.set(n.id,n.ts>base?nowT:0)});if(latest>base)S.nbase.set(src.id,latest)});S.nf.forEach((v,k)=>{if(!NSRC.some(x=>x.ev.some(y=>y.id===k)))S.nf.delete(k)});}
  $('#nwc').textContent='('+a.length+')';
  const ne=$('#news'),BADGE_MS=12e4,nl=a.slice(0,isMob()?6:250).map(n=>({n,nwn:S.nf.get(n.id)>0&&nowT-S.nf.get(n.id)<BADGE_MS})),nsig=nl.map(x=>x.n.id+(x.nwn?1:0)).join('|')||('empty'+NSRC.every(x=>x.st!=='ok'));
  if(ne._sig!==nsig){ne._sig=nsig;const st=ne.scrollTop;
@@ -1217,11 +1291,13 @@ function renderDetail(e){const el=$('#detail');
  r('Source',e.source)+r('Data status',e.status)+r('ID',e.id)+`<p style="padding:4px 10px;color:var(--m)">${esc(e.desc)}</p>`+
  `<div class="tools">${/^https:\/\//.test(e.url)?`<a href="${esc(e.url)}" target="_blank" rel="noopener noreferrer"><button>Open source</button></a>`:''}</div>`;$('#evb').hidden=false}
 
+let renderDataKey='',renderAllCache=[];
 function render(){
  hydrateIncidentDates();
  if(document.hidden){dirty=1;return}
  if(Date.now()-lastScrollT<180){if(!rT)rT=setTimeout(()=>{rT=0;render()},220);return}
- const all=events().map(e=>({...e,region:region(e.lat,e.lon),country:countryOf(e.lat,e.lon)||e.country}));
+ const dataKey=DV+'|'+incK;
+ const all=dataKey===renderDataKey?renderAllCache:(renderAllCache=events().map(e=>({...e,region:region(e.lat,e.lon),country:countryOf(e.lat,e.lon)||e.country})),renderDataKey=dataKey,renderAllCache);
  const list=visible(all);
  const ids=new Set(all.map(e=>e.id)),now=Date.now();
  all.forEach(e=>{if(!S.fs.has(e.id))S.fs.set(e.id,S.first?0:now)});
@@ -1235,16 +1311,19 @@ function render(){
    return`<button class="ev${nw?' nw':''}${an?' an':''}" style="--c:${c.c}" data-id="${esc(e.id)}"><b>${c.i} ${c.l}</b> · ${esc(e.type.toUpperCase())}<br>${etl(e.title)}<div class="mono">${fmt(e.ts)} · <span data-ago="${e.ts}">${ago(e.ts)}</span> · ${esc(e.source)} · ${esc(e.status)}</div></button>`}).join(''):'<p class="lbl" style="padding:14px">No events in this time range or filter. Widen the time range above.</p>';
   fe.scrollTop=st}
  lastAll=all;drawMap(list);const msig=list.length+'|'+S.rng+S.type+S.region+S.q+S.sev+'|'+list.slice(0,80).map(e=>e.id+e.sev).join(',');if(now-(S.mt||0)>10e3||S.msig!==msig){S.mt=now;S.msig=msig;renderMore(list)}renderNews();renderInsa();renderMkt();
- // stats
- const cnt=k=>all.filter(e=>e.sev===k).length,d24=all.filter(e=>e.ts>Date.now()-864e5).length;
- const cards=[['Active events',all.length],['Critical',cnt('critical')],['High',cnt('high')],['Moderate',cnt('moderate')],['Low',cnt('low')],['Countries affected',new Set(all.map(e=>e.country).filter(Boolean)).size],['Last 24h',d24],['Quakes M5+ (24 h)',all.filter(e=>e.type==='earthquake'&&+(/^M([\d.]+)/.exec(e.title)||[])[1]>=5&&e.ts>Date.now()-864e5).length]];
- $('#stats').innerHTML=cards.map(c=>`<div class="card"><div class="lbl">${c[0]}</div><div class="n mono">${c[1]}</div></div>`).join('');
- // alert level
- const cr=cnt('critical'),hi=cnt('high'),lv=cr?['CRITICAL','--red']:hi>=5?['HIGH','--org']:hi?['ELEVATED','--yel']:['NORMAL','--grn'];
- const al=$('#alert');al.textContent='● '+lv[0];al.style.color=`var(${lv[1]})`;al.style.borderColor=`var(${lv[1]})`;
- // regions
- $('#regions').innerHTML=REGIONS.map(r=>{const x=all.filter(e=>e.region===r),l=x.sort((a,b)=>b.ts-a.ts)[0];
-  return`<div class="row reg" tabindex="0" role="button" aria-pressed="${S.region===r}" data-r="${r}" style="${S.region===r?'background:#1a0808':''}"><span>${r}</span><span class="mono">${x.length} / ${x.filter(e=>e.sev==='critical').length}crit${l?' · '+ago(l.ts):''}</span></div>`}).join('');
+ // stats and regions: one pass, then update DOM only when the underlying data/filter state changes
+ const statsKey=dataKey+'|'+S.rng+'|'+S.type+'|'+S.region+'|'+S.q+'|'+S.sev;
+ if(render._statsKey!==statsKey){
+  render._statsKey=statsKey;
+  const counts={critical:0,high:0,moderate:0,low:0},countries=new Set(),regionMap=new Map();let d24=0,q5=0;
+  const cutoff=Date.now()-864e5;
+  all.forEach(e=>{counts[e.sev]=(counts[e.sev]||0)+1;if(e.country)countries.add(e.country);if(e.ts>cutoff)d24++;if(e.type==='earthquake'&&e.ts>cutoff&&+(/^M([\d.]+)/.exec(e.title)||[])[1]>=5)q5++;const r=regionMap.get(e.region)||{n:0,c:0,t:0};r.n++;if(e.sev==='critical')r.c++;r.t=Math.max(r.t,e.ts);regionMap.set(e.region,r)});
+  const cards=[['Active events',all.length],['Critical',counts.critical],['High',counts.high],['Moderate',counts.moderate],['Low',counts.low],['Countries affected',countries.size],['Last 24h',d24],['Quakes M5+ (24 h)',q5]];
+  $('#stats').innerHTML=cards.map(c=>`<div class="card"><div class="lbl">${c[0]}</div><div class="n mono">${c[1]}</div></div>`).join('');
+  const cr=counts.critical,hi=counts.high,lv=cr?['CRITICAL','--red']:hi>=5?['HIGH','--org']:hi?['ELEVATED','--yel']:['NORMAL','--grn'];
+  const al=$('#alert');al.textContent='● '+lv[0];al.style.color=`var(${lv[1]})`;al.style.borderColor=`var(${lv[1]})`;
+  $('#regions').innerHTML=REGIONS.map(r=>{const x=regionMap.get(r)||{n:0,c:0,t:0};return`<div class="row reg" tabindex="0" role="button" aria-pressed="${S.region===r}" data-r="${r}" style="${S.region===r?'background:#1a0808':''}"><span>${r}</span><span class="mono">${x.n} / ${x.c}crit${x.t?' · '+ago(x.t):''}</span></div>`}).join('');
+ }
  // sources
  
  // header status
@@ -1283,5 +1362,8 @@ addEventListener('pagehide',()=>{clearInterval(T1);clearInterval(T2);clearInterv
 $('#cs').onclick=()=>{spot(null);fitIndia(true)};$('#ce').onclick=()=>{S.sel=null;spot(null);renderDetail();fitIndia(true)};
 $('#more').onclick=e=>{const b=e.target.closest('[data-id]');if(b){select(b.dataset.id,true);scrollTo({top:0,behavior:'smooth'})}};
 addEventListener('scroll',()=>{lastScrollT=Date.now()},{passive:true,capture:true});
-tick();initMap();$('#zi').onclick=()=>fitIndia(true);$('#zw').onclick=()=>map&&map.flyTo([20,10],2);renderDetail();[...SRC,...NSRC].forEach(x=>setTimeout(()=>poll(x),x.delay||0));render();
+tick();initMap();
+let resizeT;
+addEventListener('resize',()=>{clearTimeout(resizeT);resizeT=setTimeout(()=>{if(map){map.invalidateSize({pan:false});if(!isMob())fitIndia(false)}},120)},{passive:true});
+$('#zi').onclick=()=>fitIndia(true);$('#zw').onclick=()=>map&&map.flyTo([20,10],2);renderDetail();[...SRC,...NSRC].forEach(x=>setTimeout(()=>poll(x),x.delay||0));render();
 </script></body></html>
