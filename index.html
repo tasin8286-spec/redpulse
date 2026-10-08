@@ -33,7 +33,7 @@
 .leaflet-tile::selection {
 	background: transparent;
 }
-/* Safari renders non-retina tile on retina better with this, but Chrome is worse */
+/* Safari renders non-retina tile on retina better */
 .leaflet-safari .leaflet-tile {
 	image-rendering: -webkit-optimize-contrast;
 	}
@@ -898,11 +898,19 @@ html{scroll-behavior:smooth}
 //# sourceMappingURL=leaflet.js.map</script>
 <script>
 "use strict";
+
+/* ==================================================
+   DOM HELPERS
+================================================== */
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const etl=t=>esc(t).replace(/^(M\d+(?:\.\d+)?)/,'<span class="mag">$1</span>');
 const SEV={critical:{c:'#ff0000',l:'CRITICAL',i:'▲▲',r:4},high:{c:'#ff4d2e',l:'HIGH',i:'▲',r:3},moderate:{c:'#ff8a50',l:'MODERATE',i:'■',r:2},low:{c:'#c0455a',l:'LOW',i:'●',r:1},info:{c:'#a07880',l:'INFO',i:'ℹ',r:0}};
 const TYPES=['all','terror','blast','hijack','earthquake','weather','fire','flood','volcanic','other'];
+
+/* ==================================================
+   CONFIGURATION & REGIONS
+================================================== */
 const REGIONS=['North America','South America','Europe','Africa','Middle East','Asia','Oceania','Arctic / Antarctic'];
 const region=(la,lo)=>la>66||la<-60?'Arctic / Antarctic':lo<-30?(la>12?'North America':'South America'):lo<-25&&la>12?'North America':
  (lo>=-20&&lo<45&&la>=35)?'Europe':(lo>=-20&&lo<52&&la<35&&la>-36&&!(lo>34&&la>12))?'Africa':(lo>=34&&lo<60&&la>12&&la<38)?'Middle East':lo>110&&la<-8||lo>150||(lo>110&&la<0)?'Oceania':'Asia';
@@ -928,6 +936,10 @@ const pWiki=d=>j=>{const html=j&&j.parse&&j.parse.text&&j.parse.text['*'];if(!ht
   else if((tg==='P'||tg==='DL'||/^H[2-6]$/.test(tg))&&!c.querySelector('li')&&c.textContent.trim().length<70){cat=c.textContent.trim()||cat}
   else if(tg==='DIV')walk(c)}};
  walk(root);return out};
+
+/* ==================================================
+   FEED PARSERS
+================================================== */
 const pBsky=(name,hc)=>j=>(j.feed||[]).filter(f=>!f.reason&&f.post&&f.post.record).map(f=>{const p=f.post,r=p.record,ex=p.embed&&p.embed.external,ex2=ex||(p.embed&&p.embed.media&&p.embed.media.external),fa=(r.facets||[]).flatMap(q=>q.features||[]).find(q=>q.uri&&/^https:\/\//.test(q.uri)),tx=/https:\/\/[^\s)]+/.exec(r.text||''),cand=(ex2&&ex2.uri)||(fa&&fa.uri)||(tx&&tx[0])||'',link=/^https:\/\//.test(cand)&&!/\/\/(bsky\.app|bsky\.social)\b/.test(cand)?cand:'',t=(ex&&ex.title&&ex.title.length>15?ex.title:r.text||'').replace(/\s+/g,' ').trim();
  return{id:'bs:'+p.uri,kind:'SOCIAL',cat:'News post',title:t.slice(0,240),src:name,hlcat:hc,lab:'NEWS ORG POST · BLUESKY',url:link,ts:Date.parse(r.createdAt)||Date.now(),day:0}}).filter(n=>n.title.length>10&&n.url);
 const bsky=(h,n=15)=>'https://public.api.bsky.app/xrpc/app.bsky.feed.getAuthorFeed?actor='+h+'&limit='+n+'&filter=posts_no_replies';
@@ -1211,6 +1223,10 @@ function renderDetail(e){const el=$('#detail');
  r('Source',e.source)+r('Data status',e.status)+r('ID',e.id)+`<p style="padding:4px 10px;color:var(--m)">${esc(e.desc)}</p>`+
  `<div class="tools">${/^https:\/\//.test(e.url)?`<a href="${esc(e.url)}" target="_blank" rel="noopener noreferrer"><button>Open source</button></a>`:''}</div>`;$('#evb').hidden=false}
 
+
+/* ==================================================
+   UI RENDERING
+================================================== */
 function render(){
  if(document.hidden){dirty=1;return}
  if(Date.now()-lastScrollT<180){if(!rT)rT=setTimeout(()=>{rT=0;render()},220);return}
@@ -1268,7 +1284,7 @@ let dt;$('#q').oninput=e=>{clearTimeout(dt);dt=setTimeout(()=>{S.q=e.target.valu
 const tog=(id,k,txt,after)=>{$(id).onclick=function(){S[k]=!S[k];this.setAttribute('aria-pressed',S[k]);if(txt)this.textContent=txt(S[k]);after&&after();render()}};
 tog('#zn','zones');
 const T1=setInterval(()=>{if(document.hidden)return;const n=new Date();$('#utc').textContent=n.toISOString().slice(11,19);$('#loc').textContent=n.toLocaleTimeString([], {hour12:false})},1000);
-const T2=setInterval(render,30e3),T3=setInterval(()=>document.hidden||document.querySelectorAll('[data-ago]').forEach(x=>{x.textContent=ago(+x.dataset.ago)}),5e3);
+const T2=setInterval(render,60e3),T3=setInterval(()=>document.hidden||document.querySelectorAll('[data-ago]').forEach(x=>{x.textContent=ago(+x.dataset.ago)}),5e3);
 addEventListener('online',()=>[...SRC,...NSRC].forEach(x=>{clearTimeout(x.t);setTimeout(()=>poll(x),x.delay||0)}));addEventListener('offline',render);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(dirty){dirty=0;render()}[...SRC,...NSRC].forEach(x=>{clearTimeout(x.t);setTimeout(()=>poll(x),x.delay||0)})}});
 addEventListener('pagehide',()=>{clearInterval(T1);clearInterval(T2);clearInterval(T3);clearTimeout(rT);RO&&RO.disconnect();[...SRC,...NSRC].forEach(x=>clearTimeout(x.t))}); // refresh relative times and source countdowns
