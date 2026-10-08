@@ -691,6 +691,8 @@ section>h2{margin:0;padding:6px 10px;font-size:10px;letter-spacing:.15em;text-tr
 .ev:hover{background:#1a0808}.ev b{color:var(--c);font-size:11px;letter-spacing:.08em}.ev div{color:var(--m);font-size:11px}
 .osm-dark{filter:invert(1) hue-rotate(180deg) brightness(.8) contrast(.9)}
 .cl{background:none;border:0;box-shadow:none;color:#fff;font:700 10px system-ui;text-shadow:0 0 3px #000,0 0 3px #000;padding:0}.cl:before{display:none}.cl2{font-weight:400;color:#9a9a9a}
+.map-country-label{position:absolute;left:0;top:0;transform:translate(-50%,-50%);white-space:nowrap;pointer-events:none;font:700 9px system-ui;color:#fff;text-shadow:0 0 3px #000,0 0 3px #000;will-change:transform}
+.map-country-label.small{font-size:8px;font-weight:600}
 .pk{width:18px;height:18px;border-radius:50%;border:2px solid var(--red);animation:pk 1.8s infinite}@keyframes pk{0%{transform:scale(.6);opacity:1}100%{transform:scale(2.2);opacity:0}}
 .lg{background:rgba(8,8,8,.92);border:1px solid var(--b);padding:6px 9px;font-size:11px;line-height:1.7}.lg i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
 @keyframes in{from{opacity:0;transform:translateY(-4px)}}
@@ -1205,7 +1207,20 @@ const BASE={color:'#8b0000',weight:.7,fillColor:'#150506',fillOpacity:1},BIN={co
 const SHORT={'United States':'USA','United Kingdom':'UK','Democratic Republic of the Congo':'DR Congo','Republic of the Congo':'Rep. Congo','Central African Rep.':'CAR','Bosnia and Herz.':'Bosnia','United Arab Emirates':'UAE','Dominican Rep.':'Dominican Rep'};
 let RO,SEL;
 const fitIndia=a=>{if(!map)return;map.invalidateSize();const z=map.getSize();if(z.x<50||z.y<50)return;const b=[[6,68],[37.5,97.5]];a?map.flyToBounds(b,{padding:[20,20]}):map.fitBounds(b,{padding:[20,20],animate:false})};
-function paintCountries(){}
+let countryLabelPane,countryLabelEls=[],countryLabelRAF=0;
+function paintCountries(){
+ if(!map)return;
+ if(countryLabelPane){countryLabelPane.innerHTML='';countryLabelEls=[]}
+ map.createPane('countryLabels');countryLabelPane=map.getPane('countryLabels');countryLabelPane.style.zIndex=450;countryLabelPane.style.pointerEvents='none';
+ const seen=new Set();
+ WF.forEach(f=>{
+   if(!f.pt||!f.n||seen.has(f.n))return;seen.add(f.n);
+   const el=document.createElement('div');el.className='map-country-label'+(f.n.length>16?' small':'');el.textContent=SHORT[f.n]||f.n;countryLabelPane.appendChild(el);countryLabelEls.push({el,pt:f.pt});
+ });
+ const update=()=>{countryLabelRAF=0;if(!map||!countryLabelPane)return;const z=map.getZoom(),show=z>=2.5;countryLabelPane.style.display=show?'block':'none';if(!show)return;for(const x of countryLabelEls){const p=map.latLngToLayerPoint(x.pt);x.el.style.transform=`translate(${Math.round(p.x)}px,${Math.round(p.y)}px) translate(-50%,-50%)`}};
+ const schedule=()=>{if(!countryLabelRAF)countryLabelRAF=requestAnimationFrame(update)};
+ map.on('move zoomend resize',schedule);schedule();
+}
 function initMap(){
  if(!window.L){$('#map').innerHTML='<p style="padding:20px">Map library failed to load (offline?). Feed and stats still work.</p>';return}
  map=L.map('map',{preferCanvas:true,renderer:L.canvas({padding:.5}),minZoom:2,zoomSnap:.25,maxBounds:[[-85,-190],[85,190]],maxBoundsViscosity:.9,zoomControl:true,scrollWheelZoom:false,dragging:!L.Browser.mobile,tap:false}).setView([22,80],4);
@@ -1215,7 +1230,7 @@ function initMap(){
   map.on('click',()=>map.scrollWheelZoom.enable());
   mc.addEventListener('mouseleave',()=>map.scrollWheelZoom.disable());
   if(L.Browser.mobile)mc.addEventListener('touchstart',e=>{if(e.touches.length===1)say('Use two fingers to move or zoom the map')},{passive:true})}
- L.geoJSON(WORLD,{renderer:L.canvas({padding:.5}),style:f=>baseOf(f.properties.name)}).addTo(map);
+ L.geoJSON(WORLD,{renderer:L.canvas({padding:.5}),style:f=>baseOf(f.properties.name)}).addTo(map);paintCountries();
  SEL=L.layerGroup().addTo(map);requestAnimationFrame(()=>fitIndia(false));if(window.ResizeObserver){let fitted=0;RO=new ResizeObserver(()=>{map.invalidateSize();if(!fitted&&map.getSize().x>50&&map.getSize().y>50){fitted=1;fitIndia(false)}});RO.observe(document.getElementById('map'))}
  layer=L.layerGroup().addTo(map);
  const lg=L.control({position:'bottomleft'});lg.onAdd=()=>{const d=L.DomUtil.create('div','lg');d.innerHTML=Object.values(SEV).map(v=>`<div><i style="background:${v.c}"></i>${v.i} ${v.l}</div>`).join('')+'<div class="lbl">Danger zones = visual aid only</div>';return d};lg.addTo(map);
